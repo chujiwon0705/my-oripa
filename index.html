@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>マイルドWebオリパ - エクストレカ風演出＆確認ダイアログ版</title>
+  <title>マイルドWebオリパ - 3.5秒黄金テンポ演出</title>
   <style>
     :root {
       --bg-color: #0b0f19;
@@ -176,7 +176,7 @@
       transform: scale(0.98);
     }
 
-    /* --- モーダル共通 --- */
+    /* --- モーダル --- */
     .modal {
       display: none;
       position: fixed;
@@ -420,7 +420,6 @@
       <div class="oripa-title">【1/15当たり】マイルドオリパ 1口100 pt</div>
       <div class="oripa-desc">S(12k) / A(4k) / B(2k) / C(500pt) 封入！</div>
 
-      <!-- 回数選択 -->
       <div class="count-select">
         <div class="count-opt selected" onclick="selectCount(1, this)">1連</div>
         <div class="count-opt" onclick="selectCount(10, this)">10連</div>
@@ -503,7 +502,6 @@
       const TOTAL_SLOTS = 750;
       let slots = new Array(TOTAL_SLOTS).fill(null);
 
-      // 全50口の当たり構成
       let hits = [];
       for(let i=0; i<2; i++) hits.push({ rank: 'S', label: '目玉カード (12,000 pt相当)', convertPt: 12000 });
       for(let i=0; i<3; i++) hits.push({ rank: 'A', label: '豪華カード (4,000 pt相当)', convertPt: 4000 });
@@ -584,12 +582,11 @@
       }
 
       pushBtn.style.display = 'block';
-      cutin.innerText = 'ボタンを連打せよ！！';
-      drawCardCanvas('PACK_INIT', 'EXTRECA'); // エクストレカ風共通パッケージ背景
+      cutin.innerText = 'ボタンを叩け！！';
+      drawCardCanvas('PACK_INIT', 'EXTRECA');
       updateUI();
     }
 
-    // エクストレカ風演出Canvas描画
     function drawCardCanvas(rank, mode = 'EXTRECA') {
       const canvas = document.getElementById('animCanvas');
       const ctx = canvas.getContext('2d');
@@ -604,7 +601,6 @@
         return;
       }
 
-      // エクストレカ風赤熱・サイバー背景
       let bgGrd = ctx.createRadialGradient(w/2, h/2, 10, w/2, h/2, 220);
       if (rank === 'S') { bgGrd.addColorStop(0, '#f43f5e'); bgGrd.addColorStop(1, '#000000'); }
       else if (rank === 'A') { bgGrd.addColorStop(0, '#fbbf24'); bgGrd.addColorStop(1, '#000000'); }
@@ -619,7 +615,6 @@
       ctx.translate(w/2, h/2);
 
       if (rank === 'PACK_INIT') {
-        // パック開封前（オリジナル限定パックグラフィック）
         let packGrd = ctx.createLinearGradient(-60, -100, 60, 100);
         packGrd.addColorStop(0, '#ef4444');
         packGrd.addColorStop(0.5, '#fbbf24');
@@ -639,7 +634,6 @@
         ctx.fillText('SPECIAL', 0, -20);
         ctx.fillText('ORIPA', 0, 10);
       } else {
-        // カード表面描画
         let cardGrd = ctx.createLinearGradient(-80, -120, 80, 120);
         if (rank === 'S') { cardGrd.addColorStop(0, '#f43f5e'); cardGrd.addColorStop(1, '#fbbf24'); }
         else if (rank === 'A') { cardGrd.addColorStop(0, '#f59e0b'); cardGrd.addColorStop(1, '#ef4444'); }
@@ -675,6 +669,7 @@
       ctx.restore();
     }
 
+    // 黄金比【3.5秒】タイムラインによる脳汁演出
     function triggerPachinkoEffect() {
       const pushBtn = document.getElementById('pushBtn');
       const cutin = document.getElementById('cutinText');
@@ -684,40 +679,57 @@
       if (['S', 'A', 'B'].includes(highestRank)) {
         const isDirect = Math.random() > 0.4;
 
-        if (isDirect) {
-          cutin.innerText = '・・・・・・';
-          drawCardCanvas('PACK_INIT', 'BLACKOUT');
+        // 【ステップ1：0.0秒〜1.0秒】予兆（オーラ・チャージ）
+        cutin.innerText = '⚡ エネルギー充填中... ⚡';
+        drawCardCanvas('PACK_INIT', 'EXTRECA');
 
-          setTimeout(() => {
-            cutin.innerText = highestRank === 'S' ? '🌈🔥【超絶爆アド確定！！】🔥🌈' : '🥇🔥【アド確定！！】🔥🥇';
-            drawCardCanvas(highestRank, 'AD_CONFIRM');
-          }, 600);
+        setTimeout(() => {
+          if (isDirect) {
+            // 【ステップ2：1.0秒〜2.5秒】極限のフリーズ暗転（1.5秒間のタメ）
+            cutin.innerText = '・・・・・・';
+            drawCardCanvas('PACK_INIT', 'BLACKOUT');
 
-        } else {
-          cutin.innerText = 'パッ OPEN...！';
-          drawCardCanvas('C', 'EXTRECA');
+            setTimeout(() => {
+              // 【ステップ3：2.5秒〜3.5秒】覚醒・ドカン！！（1.0秒間の確定カットイン）
+              cutin.innerText = highestRank === 'S' ? '🌈🔥【超絶爆アド確定！！】🔥🌈' : '🥇🔥【アド確定！！】🔥🥇';
+              drawCardCanvas(highestRank, 'AD_CONFIRM');
+            }, 1500);
 
-          setTimeout(() => {
-            cutin.innerText = `⚡ 昇格ラッシュ発生！${highestRank}賞へ到達！！ ⚡`;
-            drawCardCanvas(highestRank, 'REVERSE');
-          }, 800);
-        }
+          } else {
+            // 【ステップ2：1.0秒〜2.5秒】一瞬「C賞か…？」と思わせるタメ
+            cutin.innerText = 'カードオープン...！';
+            drawCardCanvas('C', 'EXTRECA');
 
+            setTimeout(() => {
+              // 【ステップ3：2.5秒〜3.5秒】クラッシュ逆転昇格！
+              cutin.innerText = `⚡ 昇格ラッシュ発生！${highestRank}賞へ到達！！ ⚡`;
+              drawCardCanvas(highestRank, 'REVERSE');
+            }, 1500);
+          }
+        }, 1000);
+
+        // 合計3.5秒後に結果画面を開く
         setTimeout(() => {
           document.getElementById('effectStage').style.display = 'none';
           document.getElementById('resultContainer').style.display = 'block';
           renderResultList();
-        }, 2200);
+        }, 3500);
 
       } else {
-        cutin.innerText = highestRank === 'C' ? '🥈【C賞】優良カードHIT！' : '🔵【D賞】開封完了';
-        drawCardCanvas(highestRank, 'EXTRECA');
+        // 通常当たり（1.8秒のショートテンポ）
+        cutin.innerText = 'カードオープン...';
+        drawCardCanvas('PACK_INIT', 'EXTRECA');
+
+        setTimeout(() => {
+          cutin.innerText = highestRank === 'C' ? '🥈【C賞】優良カードHIT！' : '🔵【D賞】開封完了';
+          drawCardCanvas(highestRank, 'EXTRECA');
+        }, 800);
 
         setTimeout(() => {
           document.getElementById('effectStage').style.display = 'none';
           document.getElementById('resultContainer').style.display = 'block';
           renderResultList();
-        }, 1000);
+        }, 1800);
       }
     }
 
@@ -749,7 +761,6 @@
       document.getElementById('resBatchSum').innerText = sum.toLocaleString();
     }
 
-    /* --- 還元確認ダイアログ制御 --- */
     function openConfirmModal(ptValue, actionFn) {
       document.getElementById('confirmPtDisplay').innerText = `+${ptValue.toLocaleString()} pt`;
       pendingConvertAction = actionFn;
@@ -768,7 +779,6 @@
       closeConfirmModal();
     }
 
-    // 結果モーダル内での単品還元要請
     function requestConvertSingleRes(idx) {
       const item = currentGachaResults[idx];
       openConfirmModal(item.convertPt, () => {
@@ -779,7 +789,6 @@
       });
     }
 
-    // 結果モーダル内での一括還元要請
     function requestConvertSelectedRes() {
       const chks = document.querySelectorAll('.res-chk:checked');
       if (chks.length === 0) { alert('還元するカードを選択してください'); return; }
@@ -806,7 +815,6 @@
       updateUI();
     }
 
-    /* --- 獲得商品一覧モーダル --- */
     function openInventoryModal() {
       document.getElementById('inventoryModal').classList.add('active');
       renderInventory();
@@ -850,7 +858,6 @@
       document.getElementById('invBatchSum').innerText = sum.toLocaleString();
     }
 
-    // 一覧モーダル内での単品還元要請
     function requestConvertSingleInv(idx) {
       const item = userInventory[idx];
       openConfirmModal(item.convertPt, () => {
@@ -861,7 +868,6 @@
       });
     }
 
-    // 一覧モーダル内での一括還元要請
     function requestConvertSelectedInv() {
       const chks = document.querySelectorAll('.inv-chk:checked');
       if (chks.length === 0) { alert('還元するカードを選択してください'); return; }
