@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>マイルドWebオリパ - 10万ptデモ</title>
+  <title>マイルドWebオリパ - デモ</title>
   <style>
     :root {
       --bg-color: #0b0f19;
@@ -222,18 +222,17 @@
     }
 
     .cutin-text {
-      font-size: 2.2rem;
+      font-size: 2rem;
       font-weight: 900;
       text-align: center;
       margin-top: 1rem;
       text-shadow: 0 0 20px rgba(255,255,255,0.8);
     }
 
-    /* 演出カラーフラッシュ */
-    .flash-rainbow { animation: rainbowFlash 0.25s infinite alternate; }
-    .flash-gold { animation: goldFlash 0.35s infinite alternate; }
-    .flash-silver { animation: silverFlash 0.45s infinite alternate; }
-    .flash-red { animation: redFlash 0.45s infinite alternate; }
+    /* 演出カラーフラッシュ（揺れなし） */
+    .flash-rainbow { animation: rainbowFlash 0.3s infinite alternate; }
+    .flash-gold { animation: goldFlash 0.4s infinite alternate; }
+    .flash-silver { animation: silverFlash 0.5s infinite alternate; }
     .flash-blue { background-color: rgba(15, 23, 42, 0.95); }
 
     @keyframes rainbowFlash {
@@ -249,19 +248,6 @@
     @keyframes silverFlash {
       0% { background-color: rgba(30, 41, 59, 0.95); }
       100% { background-color: rgba(226, 232, 240, 0.6); }
-    }
-    @keyframes redFlash {
-      0% { background-color: rgba(15, 23, 42, 0.95); }
-      100% { background-color: rgba(239, 68, 68, 0.5); }
-    }
-
-    .shake { animation: shake 0.3s ease-in-out infinite; }
-    @keyframes shake {
-      0%, 100% { transform: translate(0, 0); }
-      20% { transform: translate(-8px, 8px); }
-      40% { transform: translate(8px, -8px); }
-      60% { transform: translate(-8px, -8px); }
-      80% { transform: translate(8px, 8px); }
     }
 
     /* 結果画面 & 商品一覧モーダル内部 */
@@ -371,8 +357,8 @@
 
   <main>
     <div class="oripa-card">
-      <div class="oripa-title">【1/15アド】マイルドオリパ 1口100 pt</div>
-      <div class="oripa-desc">A賞・B賞・C賞(カード/1,000pt)封入！</div>
+      <div class="oripa-title">【1/15当たり】マイルドオリパ 1口100 pt</div>
+      <div class="oripa-desc">A賞(12,000pt) / B賞(2,000pt) / C賞(500pt) 封入！</div>
 
       <!-- 回数選択 -->
       <div class="count-select">
@@ -429,10 +415,13 @@
       stock = [];
       userInventory = [];
 
+      // A賞: 2口 (12,000 pt)
       for(let i=0; i<2; i++) stock.push({ id: Math.random(), rank: 'A', label: '目玉カード (12,000 pt相当)', convertPt: 12000 });
+      // B賞: 3口 (2,000 pt)
       for(let i=0; i<3; i++) stock.push({ id: Math.random(), rank: 'B', label: '豪華SR・パラレル (2,000 pt相当)', convertPt: 2000 });
-      for(let i=0; i<33; i++) stock.push({ id: Math.random(), rank: 'C', label: '優良カード (500 pt相当)', convertPt: 500 });
-      for(let i=0; i<12; i++) stock.push({ id: Math.random(), rank: 'C', label: '1,000ポイント', isPoint: true, ptValue: 1000, convertPt: 0 });
+      // C賞: 45口 (500 pt)
+      for(let i=0; i<45; i++) stock.push({ id: Math.random(), rank: 'C', label: '優良カード (500 pt相当)', convertPt: 500 });
+      // D賞(ハズレ): 700口 (1 pt)
       for(let i=0; i<700; i++) stock.push({ id: Math.random(), rank: 'D', label: 'ノーマルカード', convertPt: 1 });
 
       stock.sort(() => Math.random() - 0.5);
@@ -479,16 +468,11 @@
 
       for(let i=0; i<count; i++) {
         let item = stock.pop();
-        if (!item.isPoint) {
-          currentGachaResults.push(item);
-        } else {
-          currentPoints += item.ptValue; // ポイント当たりは即還元
-        }
+        currentGachaResults.push(item);
 
         if (item.rank === 'A') pendingGachaRank = 'rainbow';
         else if (item.rank === 'B' && pendingGachaRank !== 'rainbow') pendingGachaRank = 'gold';
-        else if (item.rank === 'C' && !item.isPoint && !['rainbow', 'gold'].includes(pendingGachaRank)) pendingGachaRank = 'silver';
-        else if (item.isPoint && !['rainbow', 'gold', 'silver'].includes(pendingGachaRank)) pendingGachaRank = 'red';
+        else if (item.rank === 'C' && !['rainbow', 'gold'].includes(pendingGachaRank)) pendingGachaRank = 'silver';
       }
 
       pushBtn.style.display = 'block';
@@ -505,17 +489,14 @@
       pushBtn.style.display = 'none';
 
       if (pendingGachaRank === 'rainbow') {
-        modal.classList.add('flash-rainbow', 'shake');
+        modal.classList.add('flash-rainbow');
         cutin.innerText = '🌈【虹】超極上アド確定！！ 🌈';
       } else if (pendingGachaRank === 'gold') {
-        modal.classList.add('flash-gold', 'shake');
+        modal.classList.add('flash-gold');
         cutin.innerText = '🥇【金】激熱！豪華カード獲得！ 🥇';
       } else if (pendingGachaRank === 'silver') {
         modal.classList.add('flash-silver');
         cutin.innerText = '🥈【銀】優良カードHIT！';
-      } else if (pendingGachaRank === 'red') {
-        modal.classList.add('flash-red');
-        cutin.innerText = '🔴【赤】1,000 pt獲得！';
       } else {
         modal.classList.add('flash-blue');
         cutin.innerText = '🔵【青】開封完了';
@@ -525,17 +506,12 @@
         document.getElementById('effectStage').style.display = 'none';
         document.getElementById('resultContainer').style.display = 'block';
         renderResultList();
-      }, 1200);
+      }, 1000);
     }
 
     function renderResultList() {
       const list = document.getElementById('resultList');
       list.innerHTML = '';
-
-      if (currentGachaResults.length === 0) {
-        list.innerHTML = '<div style="padding:1rem; text-align:center;">すべてポイント（即加算）でした！</div>';
-        return;
-      }
 
       currentGachaResults.forEach((res, idx) => {
         const div = document.createElement('div');
@@ -546,7 +522,7 @@
             <span class="badge badge-${res.rank}">${res.rank}賞</span>
             <span>${res.label}</span>
           </div>
-          <button class="convert-btn" onclick="convertSingleRes(${idx})">+${res.convertPt} pt</button>
+          <button class="convert-btn" onclick="convertSingleRes(${idx})">+${res.convertPt} pt還元</button>
         `;
         list.appendChild(div);
       });
