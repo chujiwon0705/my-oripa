@@ -3,10 +3,10 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>マイルドWebオリパ - 色演出強化版</title>
+  <title>マイルドWebオリパ - 脳汁演出＆コレクション版</title>
   <style>
     :root {
-      --bg-color: #0f172a;
+      --bg-color: #0b0f19;
       --card-bg: #1e293b;
       --accent-color: #38bdf8;
       --text-color: #f8fafc;
@@ -28,15 +28,16 @@
       flex-direction: column;
       align-items: center;
       min-height: 100vh;
+      padding-bottom: 3rem;
     }
 
     header {
       width: 100%;
       padding: 1rem;
-      background-color: rgba(30, 41, 59, 0.9);
+      background-color: rgba(15, 23, 42, 0.95);
       backdrop-filter: blur(8px);
       text-align: center;
-      box-shadow: 0 4px 6px -1px rgba(0,0,0,0.3);
+      box-shadow: 0 4px 10px rgba(0,0,0,0.5);
       position: sticky;
       top: 0;
       z-index: 10;
@@ -83,14 +84,14 @@
     main {
       width: 100%;
       max-width: 480px;
-      padding: 1.25rem;
+      padding: 1rem;
       box-sizing: border-box;
       display: flex;
       flex-direction: column;
-      align-items: center;
+      gap: 1.5rem;
     }
 
-    .oripa-card {
+    .oripa-card, .inventory-card {
       width: 100%;
       background-color: var(--card-bg);
       border-radius: 1rem;
@@ -110,36 +111,53 @@
     .oripa-desc {
       font-size: 0.85rem;
       color: #94a3b8;
-      margin-bottom: 1.25rem;
+      margin-bottom: 1rem;
     }
 
-    .button-group {
+    .count-select {
       display: flex;
-      flex-direction: column;
-      gap: 0.75rem;
-      width: 100%;
+      justify-content: space-between;
+      gap: 0.5rem;
+      margin-bottom: 1rem;
     }
 
-    button.gacha-btn {
+    .count-opt {
+      flex: 1;
+      padding: 0.5rem;
+      background: rgba(0,0,0,0.3);
+      border: 1px solid rgba(255,255,255,0.2);
+      border-radius: 0.5rem;
+      font-size: 0.85rem;
+      font-weight: bold;
+      cursor: pointer;
+      text-align: center;
+    }
+
+    .count-opt.selected {
+      border-color: var(--gold);
+      background: rgba(251, 191, 36, 0.2);
+      color: var(--gold);
+    }
+
+    button.gacha-exec-btn {
       width: 100%;
-      padding: 0.875rem;
+      padding: 1rem;
       border: none;
       border-radius: 0.5rem;
-      font-weight: bold;
-      font-size: 1rem;
+      font-weight: 900;
+      font-size: 1.2rem;
+      background: linear-gradient(135deg, #f59e0b, #ef4444);
+      color: white;
       cursor: pointer;
+      box-shadow: 0 0 15px rgba(239, 68, 68, 0.4);
       transition: transform 0.1s;
     }
 
-    button.gacha-btn:active {
+    button.gacha-exec-btn:active {
       transform: scale(0.98);
     }
 
-    .btn-single { background-color: #3b82f6; color: white; }
-    .btn-ten { background: linear-gradient(135deg, #8b5cf6, #ec4899); color: white; }
-    .btn-twenty { background: linear-gradient(135deg, #f59e0b, #ef4444); color: white; }
-
-    /* --- ガチャ演出モーダル --- */
+    /* --- 演出モーダル --- */
     .modal {
       display: none;
       position: fixed;
@@ -164,110 +182,90 @@
       height: 100%;
     }
 
-    .pack-icon {
-      font-size: 5rem;
-      animation: packBounce 0.8s infinite alternate;
+    .push-btn {
+      width: 120px;
+      height: 120px;
+      border-radius: 50%;
+      background: radial-gradient(circle, #ef4444, #991b1b);
+      color: white;
+      font-size: 1.2rem;
+      font-weight: 900;
+      border: 6px solid #fca5a5;
+      box-shadow: 0 0 30px #ef4444;
+      cursor: pointer;
+      animation: pulseBtn 0.6s infinite alternate;
+      display: none;
     }
 
-    @keyframes packBounce {
-      from { transform: translateY(0) scale(1); }
-      to { transform: translateY(-15px) scale(1.05); }
+    @keyframes pulseBtn {
+      from { transform: scale(0.95); box-shadow: 0 0 20px #ef4444; }
+      to { transform: scale(1.1); box-shadow: 0 0 40px #ef4444; }
     }
 
     .cutin-text {
-      font-size: 2rem;
+      font-size: 2.2rem;
       font-weight: 900;
       text-align: center;
       margin-top: 1rem;
       text-shadow: 0 0 20px rgba(255,255,255,0.8);
     }
 
-    /* --- 色別の演出グラデーション（虹 > 金 > 銀 > 赤 > 青） --- */
-    /* 1. 虹 (A賞) */
-    .flash-rainbow {
-      animation: rainbowFlash 0.3s infinite alternate;
-    }
+    /* 演出カラーフラッシュ */
+    .flash-rainbow { animation: rainbowFlash 0.25s infinite alternate; }
+    .flash-gold { animation: goldFlash 0.35s infinite alternate; }
+    .flash-silver { animation: silverFlash 0.45s infinite alternate; }
+    .flash-red { animation: redFlash 0.45s infinite alternate; }
+    .flash-blue { background-color: rgba(15, 23, 42, 0.95); }
+
     @keyframes rainbowFlash {
       0% { background-color: rgba(236, 72, 153, 0.9); }
       33% { background-color: rgba(251, 191, 36, 0.9); }
       66% { background-color: rgba(56, 189, 248, 0.9); }
       100% { background-color: rgba(168, 85, 247, 0.9); }
     }
-
-    /* 2. 金 (B賞) */
-    .flash-gold {
-      animation: goldFlash 0.4s infinite alternate;
-    }
     @keyframes goldFlash {
       0% { background-color: rgba(180, 83, 9, 0.9); }
       100% { background-color: rgba(251, 191, 36, 0.95); }
     }
-
-    /* 3. 銀 (C賞カード) */
-    .flash-silver {
-      animation: silverFlash 0.5s infinite alternate;
-    }
     @keyframes silverFlash {
       0% { background-color: rgba(30, 41, 59, 0.95); }
       100% { background-color: rgba(226, 232, 240, 0.6); }
-    }
-
-    /* 4. 赤 (C賞ポイント) */
-    .flash-red {
-      animation: redFlash 0.5s infinite alternate;
     }
     @keyframes redFlash {
       0% { background-color: rgba(15, 23, 42, 0.95); }
       100% { background-color: rgba(239, 68, 68, 0.5); }
     }
 
-    /* 5. 青 (D賞ハズレ) */
-    .flash-blue {
-      background-color: rgba(15, 23, 42, 0.95);
-    }
-
-    /* 画面の揺れ */
-    .shake {
-      animation: shake 0.4s ease-in-out;
-    }
+    .shake { animation: shake 0.3s ease-in-out infinite; }
     @keyframes shake {
       0%, 100% { transform: translate(0, 0); }
-      20% { transform: translate(-10px, 10px); }
-      40% { transform: translate(10px, -10px); }
-      60% { transform: translate(-10px, -10px); }
-      80% { transform: translate(10px, 10px); }
+      20% { transform: translate(-8px, 8px); }
+      40% { transform: translate(8px, -8px); }
+      60% { transform: translate(-8px, -8px); }
+      80% { transform: translate(8px, 8px); }
     }
 
-    /* 結果一覧 */
-    .result-container {
-      display: none;
+    /* 結果画面 & 商品一覧 */
+    .result-container, .inventory-container {
       width: 100%;
       max-width: 420px;
-      max-height: 80vh;
+      max-height: 70vh;
       overflow-y: auto;
       background: var(--card-bg);
       border-radius: 0.75rem;
       padding: 1rem;
       border: 1px solid rgba(255,255,255,0.2);
       box-sizing: border-box;
-      z-index: 101;
     }
 
-    .result-title {
-      text-align: center;
-      font-size: 1.2rem;
-      font-weight: bold;
-      color: var(--gold);
-      margin-bottom: 0.75rem;
-    }
-
-    .result-list {
+    .result-list, .inventory-list {
       display: flex;
       flex-direction: column;
       gap: 0.5rem;
+      margin-top: 0.75rem;
     }
 
-    .result-item {
+    .result-item, .inventory-item {
       display: flex;
       justify-content: space-between;
       align-items: center;
@@ -287,6 +285,7 @@
       border-radius: 0.25rem;
       font-weight: bold;
       font-size: 0.7rem;
+      margin-right: 0.3rem;
     }
 
     .badge-A { background: linear-gradient(135deg, #fbbf24, #ef4444); color: black; }
@@ -305,11 +304,6 @@
       cursor: pointer;
     }
 
-    .convert-btn.converted {
-      background-color: #475569;
-      cursor: not-allowed;
-    }
-
     .close-btn {
       width: 100%;
       margin-top: 1rem;
@@ -321,12 +315,30 @@
       font-weight: bold;
       cursor: pointer;
     }
+
+    .batch-actions {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 0.5rem;
+    }
+
+    .batch-btn {
+      background: var(--green);
+      color: white;
+      border: none;
+      padding: 0.4rem 0.8rem;
+      border-radius: 0.25rem;
+      font-weight: bold;
+      font-size: 0.8rem;
+      cursor: pointer;
+    }
   </style>
 </head>
 <body>
 
   <header>
-    <h1>マイルドWebオリパ (デモ)</h1>
+    <h1>マイルドWebオリパ (脳汁演出デモ)</h1>
     <div class="status-bar">
       <div class="status-item">所持金: <span id="moneyCount" class="status-value">10,000</span> 円</div>
       <div class="status-item">残数: <span id="stockCount" class="status-value">750</span>/750</div>
@@ -336,30 +348,51 @@
   </header>
 
   <main>
+    <!-- ガチャ実行カード -->
     <div class="oripa-card">
       <div class="oripa-title">【1/15アド】マイルドオリパ 1口100円</div>
       <div class="oripa-desc">A賞・B賞・C賞(カード/1,000pt)封入！</div>
 
-      <div class="button-group">
-        <button class="gacha-btn btn-single" onclick="playGacha(1)">1回引く (100円)</button>
-        <button class="gacha-btn btn-ten" onclick="playGacha(10)">10連引く (1,000円)</button>
-        <button class="gacha-btn btn-twenty" onclick="playGacha(20)">20連引く (2,000円)</button>
+      <!-- 回数選択チェック（ラジオ風ボタン） -->
+      <div class="count-select">
+        <div class="count-opt selected" onclick="selectCount(1, this)">1連</div>
+        <div class="count-opt" onclick="selectCount(10, this)">10連</div>
+        <div class="count-opt" onclick="selectCount(100, this)">100連</div>
+        <div class="count-opt" onclick="selectCount(1000, this)">1,000連</div>
+      </div>
+
+      <button id="gachaExecBtn" class="gacha-exec-btn" onclick="playGacha()">1連を引く (100円)</button>
+    </div>
+
+    <!-- 未還元商品一覧カード -->
+    <div class="inventory-card">
+      <div style="font-weight:bold; font-size:1.05rem;">📦 未還元の獲得カード一覧</div>
+      <div class="batch-actions">
+        <label><input type="checkbox" id="selectAllInv" onchange="toggleSelectAllInv(this)"> 全選択</label>
+        <button class="batch-btn" onclick="convertSelectedInv()">選択したカードを一括還元</button>
+      </div>
+      <div id="inventoryList" class="inventory-list">
+        <div style="color:#64748b; font-size:0.85rem; padding:1rem;">獲得したカードがここにストックされます</div>
       </div>
     </div>
   </main>
 
-  <!-- 演出モーダル -->
+  <!-- ガチャ演出モーダル -->
   <div id="gachaModal" class="modal">
     <div id="effectStage" class="effect-stage">
-      <div id="packIcon" class="pack-icon">🎴</div>
-      <div id="cutinText" class="cutin-text">開封中...</div>
+      <button id="pushBtn" class="push-btn" onclick="triggerPachinkoEffect()">PUSH!</button>
+      <div id="cutinText" class="cutin-text">レバーを叩け！</div>
     </div>
 
-    <!-- 結果画面 -->
-    <div id="resultContainer" class="result-container">
-      <div class="result-title">🎉 獲得結果 🎉</div>
+    <!-- 獲得結果モーダル内部 -->
+    <div id="resultContainer" class="result-container" style="display:none;">
+      <div style="text-align:center; font-size:1.2rem; font-weight:bold; color:var(--gold);">🎉 今回の獲得結果 🎉</div>
+      <div class="batch-actions">
+        <label><input type="checkbox" id="selectAllRes" onchange="toggleSelectAllRes(this)"> 全選択</label>
+        <button class="batch-btn" onclick="convertSelectedRes()">選択カードを一括還元</button>
+      </div>
       <div id="resultList" class="result-list"></div>
-      <button class="close-btn" onclick="closeModal()">閉じる</button>
+      <button class="close-btn" onclick="closeModal()">閉じる（商品一覧に保存）</button>
     </div>
   </div>
 
@@ -367,11 +400,15 @@
     let stock = [];
     let currentMoney = 10000;
     let currentPoints = 0;
+    let selectedGachaCount = 1;
+    let userInventory = []; // 未還元カード保持
+    let currentGachaResults = []; // 今回のガチャ結果
 
     function initOripa() {
       currentMoney = 10000;
       currentPoints = 0;
       stock = [];
+      userInventory = [];
 
       for(let i=0; i<2; i++) stock.push({ id: Math.random(), rank: 'A', label: '目玉カード (12,000円相当)', convertPt: 12000 });
       for(let i=0; i<3; i++) stock.push({ id: Math.random(), rank: 'B', label: '豪華SR・パラレル (2,000円相当)', convertPt: 2000 });
@@ -381,6 +418,15 @@
 
       stock.sort(() => Math.random() - 0.5);
       updateUI();
+      renderInventory();
+    }
+
+    function selectCount(count, el) {
+      selectedGachaCount = count;
+      document.querySelectorAll('.count-opt').forEach(opt => opt.classList.remove('selected'));
+      el.classList.add('selected');
+      const cost = count * 100;
+      document.getElementById('gachaExecBtn').innerText = `${count.toLocaleString()}連を引く (${cost.toLocaleString()}円)`;
     }
 
     function updateUI() {
@@ -389,126 +435,185 @@
       document.getElementById('pointCount').innerText = currentPoints.toLocaleString();
     }
 
-    function playGacha(count) {
+    let pendingGachaRank = 'blue';
+
+    function playGacha() {
+      const count = selectedGachaCount;
       const cost = count * 100;
-      if (currentMoney < cost) {
-        alert('所持金が足りません！');
-        return;
-      }
-      if (stock.length < count) {
-        alert('残り口数が足りません！');
-        return;
-      }
+
+      if (currentMoney < cost) { alert('所持金が足りません！'); return; }
+      if (stock.length < count) { alert('残り口数が足りません！'); return; }
 
       currentMoney -= cost;
 
       const modal = document.getElementById('gachaModal');
       const stage = document.getElementById('effectStage');
-      const pack = document.getElementById('packIcon');
+      const pushBtn = document.getElementById('pushBtn');
       const cutin = document.getElementById('cutinText');
       const resultContainer = document.getElementById('resultContainer');
-      const resultList = document.getElementById('resultList');
 
       modal.className = 'modal active';
       stage.style.display = 'flex';
       resultContainer.style.display = 'none';
-      cutin.innerText = 'パック開封中...';
-      cutin.style.color = '#ffffff';
-      pack.innerText = '🎴';
 
-      let results = [];
-      let maxRankEffect = 'blue'; // 初期値: 青 (D賞)
+      currentGachaResults = [];
+      pendingGachaRank = 'blue';
 
       for(let i=0; i<count; i++) {
         let item = stock.pop();
-        results.push(item);
-
-        // 最高レア度の判定（虹 > 金 > 銀 > 赤 > 青）
-        if (item.rank === 'A') {
-          maxRankEffect = 'rainbow';
-        } else if (item.rank === 'B' && maxRankEffect !== 'rainbow') {
-          maxRankEffect = 'gold';
-        } else if (item.rank === 'C' && !item.isPoint && !['rainbow', 'gold'].includes(maxRankEffect)) {
-          maxRankEffect = 'silver';
-        } else if (item.isPoint && !['rainbow', 'gold', 'silver'].includes(maxRankEffect)) {
-          maxRankEffect = 'red';
+        if (!item.isPoint) {
+          currentGachaResults.push(item);
+        } else {
+          currentPoints += item.ptValue; // ポイントは即加算
         }
 
-        if (item.isPoint) currentPoints += item.ptValue;
+        if (item.rank === 'A') pendingGachaRank = 'rainbow';
+        else if (item.rank === 'B' && pendingGachaRank !== 'rainbow') pendingGachaRank = 'gold';
+        else if (item.rank === 'C' && !item.isPoint && !['rainbow', 'gold'].includes(pendingGachaRank)) pendingGachaRank = 'silver';
+        else if (item.isPoint && !['rainbow', 'gold', 'silver'].includes(pendingGachaRank)) pendingGachaRank = 'red';
       }
 
-      // STEP 1: 演出切り替え (1秒後)
-      setTimeout(() => {
-        if (maxRankEffect === 'rainbow') {
-          modal.classList.add('flash-rainbow', 'shake');
-          pack.innerText = '🌈';
-          cutin.innerText = '✨【虹】超目玉獲得確定！！ ✨';
-          cutin.style.color = '#ffffff';
-        } else if (maxRankEffect === 'gold') {
-          modal.classList.add('flash-gold', 'shake');
-          pack.innerText = '🥇';
-          cutin.innerText = '✨【金】豪華カード確定！ ✨';
-          cutin.style.color = '#fbbf24';
-        } else if (maxRankEffect === 'silver') {
-          modal.classList.add('flash-silver');
-          pack.innerText = '🥈';
-          cutin.innerText = '【銀】優良カードHIT！';
-          cutin.style.color = '#e2e8f0';
-        } else if (maxRankEffect === 'red') {
-          modal.classList.add('flash-red');
-          pack.innerText = '🔴';
-          cutin.innerText = '【赤】ポイントGET！';
-          cutin.style.color = '#ef4444';
-        } else {
-          modal.classList.add('flash-blue');
-          pack.innerText = '🔵';
-          cutin.innerText = '【青】開封完了';
-          cutin.style.color = '#94a3b8';
-        }
-
-        // STEP 2: 結果画面へ (さらに1.2秒後)
-        setTimeout(() => {
-          stage.style.display = 'none';
-          resultContainer.style.display = 'block';
-
-          resultList.innerHTML = '';
-          results.forEach(res => {
-            const div = document.createElement('div');
-            div.className = `result-item item-${res.rank}`;
-            
-            let btnHtml = '';
-            if (!res.isPoint) {
-              btnHtml = `<button class="convert-btn" onclick="convertToPoint(this, ${res.convertPt})">+${res.convertPt}pt還元</button>`;
-            } else {
-              btnHtml = `<span style="font-size:0.75rem; color:#ef4444; font-weight:bold;">1,000pt加算済</span>`;
-            }
-
-            div.innerHTML = `
-              <div>
-                <span class="badge badge-${res.rank}">${res.rank}賞</span>
-                <span style="margin-left: 0.3rem;">${res.label}</span>
-              </div>
-              ${btnHtml}
-            `;
-            resultList.appendChild(div);
-          });
-
-          updateUI();
-        }, 1250);
-
-      }, 1000);
-    }
-
-    function convertToPoint(btn, ptAmount) {
-      if (btn.classList.contains('converted')) return;
-      currentPoints += ptAmount;
-      btn.innerText = '還元完了';
-      btn.classList.add('converted');
+      pushBtn.style.display = 'block';
+      cutin.innerText = 'ボタンを叩け！！';
+      cutin.style.color = '#ffffff';
       updateUI();
     }
 
+    function triggerPachinkoEffect() {
+      const pushBtn = document.getElementById('pushBtn');
+      const modal = document.getElementById('gachaModal');
+      const cutin = document.getElementById('cutinText');
+
+      pushBtn.style.display = 'none';
+
+      if (pendingGachaRank === 'rainbow') {
+        modal.classList.add('flash-rainbow', 'shake');
+        cutin.innerText = '🌈【虹】超極上アド確定！！ 🌈';
+      } else if (pendingGachaRank === 'gold') {
+        modal.classList.add('flash-gold', 'shake');
+        cutin.innerText = '🥇【金】激熱！豪華カード獲得！ 🥇';
+      } else if (pendingGachaRank === 'silver') {
+        modal.classList.add('flash-silver');
+        cutin.innerText = '🥈【銀】優良カードHIT！';
+      } else if (pendingGachaRank === 'red') {
+        modal.classList.add('flash-red');
+        cutin.innerText = '🔴【赤】1,000pt獲得！';
+      } else {
+        modal.classList.add('flash-blue');
+        cutin.innerText = '🔵【青】開封完了';
+      }
+
+      setTimeout(() => {
+        document.getElementById('effectStage').style.display = 'none';
+        document.getElementById('resultContainer').style.display = 'block';
+        renderResultList();
+      }, 1200);
+    }
+
+    function renderResultList() {
+      const list = document.getElementById('resultList');
+      list.innerHTML = '';
+
+      if (currentGachaResults.length === 0) {
+        list.innerHTML = '<div style="padding:1rem; text-align:center;">すべてポイント（即加算）でした！</div>';
+        return;
+      }
+
+      currentGachaResults.forEach((res, idx) => {
+        const div = document.createElement('div');
+        div.className = `result-item item-${res.rank}`;
+        div.innerHTML = `
+          <div>
+            <input type="checkbox" class="res-chk" data-idx="${idx}">
+            <span class="badge badge-${res.rank}">${res.rank}賞</span>
+            <span>${res.label}</span>
+          </div>
+          <button class="convert-btn" onclick="convertSingleRes(${idx})">+${res.convertPt}pt</button>
+        `;
+        list.appendChild(div);
+      });
+    }
+
+    function convertSingleRes(idx) {
+      const item = currentGachaResults.splice(idx, 1)[0];
+      currentPoints += item.convertPt;
+      updateUI();
+      renderResultList();
+    }
+
+    function toggleSelectAllRes(master) {
+      document.querySelectorAll('.res-chk').forEach(chk => chk.checked = master.checked);
+    }
+
+    function convertSelectedRes() {
+      const chks = document.querySelectorAll('.res-chk:checked');
+      const indices = Array.from(chks).map(c => parseInt(c.dataset.idx)).sort((a,b) => b-a);
+      
+      indices.forEach(idx => {
+        const item = currentGachaResults.splice(idx, 1)[0];
+        currentPoints += item.convertPt;
+      });
+
+      document.getElementById('selectAllRes').checked = false;
+      updateUI();
+      renderResultList();
+    }
+
     function closeModal() {
+      userInventory = userInventory.concat(currentGachaResults);
+      currentGachaResults = [];
       document.getElementById('gachaModal').className = 'modal';
+      renderInventory();
+    }
+
+    /* --- 未還元一覧側の制御 --- */
+    function renderInventory() {
+      const list = document.getElementById('inventoryList');
+      list.innerHTML = '';
+
+      if (userInventory.length === 0) {
+        list.innerHTML = '<div style="color:#64748b; font-size:0.85rem; padding:1rem; text-align:center;">未還元の所持カードはありません</div>';
+        return;
+      }
+
+      userInventory.forEach((res, idx) => {
+        const div = document.createElement('div');
+        div.className = `inventory-item item-${res.rank}`;
+        div.innerHTML = `
+          <div>
+            <input type="checkbox" class="inv-chk" data-idx="${idx}">
+            <span class="badge badge-${res.rank}">${res.rank}賞</span>
+            <span>${res.label}</span>
+          </div>
+          <button class="convert-btn" onclick="convertSingleInv(${idx})">+${res.convertPt}pt還元</button>
+        `;
+        list.appendChild(div);
+      });
+    }
+
+    function convertSingleInv(idx) {
+      const item = userInventory.splice(idx, 1)[0];
+      currentPoints += item.convertPt;
+      updateUI();
+      renderInventory();
+    }
+
+    function toggleSelectAllInv(master) {
+      document.querySelectorAll('.inv-chk').forEach(chk => chk.checked = master.checked);
+    }
+
+    function convertSelectedInv() {
+      const chks = document.querySelectorAll('.inv-chk:checked');
+      const indices = Array.from(chks).map(c => parseInt(c.dataset.idx)).sort((a,b) => b-a);
+
+      indices.forEach(idx => {
+        const item = userInventory.splice(idx, 1)[0];
+        currentPoints += item.convertPt;
+      });
+
+      document.getElementById('selectAllInv').checked = false;
+      updateUI();
+      renderInventory();
     }
 
     initOripa();
