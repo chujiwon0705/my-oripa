@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>超演出Webオリパ - エクストレカ風3D＆パーティクル版</title>
+  <title>超演出Webオリパ - ダイナミックパック開封＆爆発演出</title>
   <style>
     :root {
       --bg-color: #060913;
@@ -351,7 +351,6 @@
       cursor: pointer;
     }
 
-    /* 還元確認ダイアログ Modal */
     .confirm-box {
       background: var(--card-bg);
       border: 1px solid var(--accent-color);
@@ -458,7 +457,7 @@
       <div id="resultList" class="result-list"></div>
       <button class="close-btn" onclick="closeGachaModal()">閉じる（商品一覧に保存）</button>
     </div>
-  </div>
+  </main>
 
   <!-- 獲得商品一覧 Modal -->
   <div id="inventoryModal" class="modal">
@@ -500,7 +499,13 @@
     let currentGachaResults = [];
     let highestRank = 'D';
     let pendingConvertAction = null;
-    let animTimer = null;
+    let animFrameId = null;
+
+    // 演出状態変数
+    let animState = 'INIT';
+    let packSplitProgress = 0; // パック切り裂き進行度 (0 -> 1)
+    let cardSlideProgress = 0; // カード出現スライド (0 -> 1)
+    let shockwaveRadius = 0;
     let particles = [];
 
     function initOripa() {
@@ -590,6 +595,23 @@
       updateGachaBtnLabel();
     }
 
+    function createParticles(count, explosion = false) {
+      particles = [];
+      for(let i=0; i<count; i++) {
+        let angle = Math.random() * Math.PI * 2;
+        let speed = explosion ? (Math.random() * 8 + 3) : (Math.random() * 2 + 1);
+        particles.push({
+          x: 200,
+          y: 190,
+          vx: Math.cos(angle) * speed,
+          vy: Math.sin(angle) * speed,
+          r: Math.random() * 4 + 2,
+          color: ['#fbbf24', '#f43f5e', '#38bdf8', '#ffffff', '#c084fc'][Math.floor(Math.random()*5)],
+          life: 1.0
+        });
+      }
+    }
+
     function playGacha() {
       const count = isSelectAllMode ? stock.length : selectedGachaCount;
       const cost = count * 100;
@@ -624,78 +646,137 @@
       }
 
       pushBtn.style.display = 'block';
-      cutin.innerText = 'ボタンを叩け！！';
-      initParticles();
-      startAnimLoop('PACK_INIT', 'EXTRECA');
+      cutin.innerText = 'PUSHボタンを押せ！！';
+      
+      animState = 'INIT';
+      packSplitProgress = 0;
+      cardSlideProgress = 0;
+      shockwaveRadius = 0;
+      createParticles(30, false);
+      startCanvasEngine();
       updateUI();
     }
 
-    // パーティクル初期化
-    function initParticles() {
-      particles = [];
-      for(let i=0; i<40; i++) {
-        particles.push({
-          x: Math.random() * 400,
-          y: Math.random() * 380,
-          r: Math.random() * 3 + 1,
-          speedY: Math.random() * 1.5 + 0.5,
-          color: ['#fbbf24', '#f43f5e', '#38bdf8', '#ffffff'][Math.floor(Math.random()*4)]
-        });
-      }
-    }
-
-    // Canvasループアニメーション（光・回転・閃光）
-    let animFrameId = null;
-    let animAngle = 0;
-
-    function startAnimLoop(rank, mode = 'EXTRECA') {
+    // 物理＆ダイナミック描画エンジン
+    function startCanvasEngine() {
       if (animFrameId) cancelAnimationFrame(animFrameId);
 
       const canvas = document.getElementById('animCanvas');
       const ctx = canvas.getContext('2d');
       const w = canvas.width;
       const h = canvas.height;
+      let time = 0;
 
       function render() {
-        animAngle += 0.05;
+        time += 0.05;
         ctx.clearRect(0, 0, w, h);
 
-        if (mode === 'BLACKOUT') {
+        if (animState === 'BLACKOUT') {
           ctx.fillStyle = '#000000';
           ctx.fillRect(0, 0, w, h);
+          animFrameId = requestAnimationFrame(render);
           return;
         }
 
-        // 背景ビーム＆オーラ
+        // 背景ダイナミックオーラ
         let bgGrd = ctx.createRadialGradient(w/2, h/2, 10, w/2, h/2, 220);
-        if (rank === 'S') { bgGrd.addColorStop(0, '#f43f5e'); bgGrd.addColorStop(1, '#000000'); }
-        else if (rank === 'A') { bgGrd.addColorStop(0, '#fbbf24'); bgGrd.addColorStop(1, '#000000'); }
-        else if (rank === 'B') { bgGrd.addColorStop(0, '#c084fc'); bgGrd.addColorStop(1, '#000000'); }
-        else if (rank === 'C') { bgGrd.addColorStop(0, '#38bdf8'); bgGrd.addColorStop(1, '#000000'); }
-        else { bgGrd.addColorStop(0, '#ef4444'); bgGrd.addColorStop(1, '#0b0f19'); }
-
+        if (animState === 'RESULT') {
+          if (highestRank === 'S') { bgGrd.addColorStop(0, '#f43f5e'); bgGrd.addColorStop(1, '#000000'); }
+          else if (highestRank === 'A') { bgGrd.addColorStop(0, '#fbbf24'); bgGrd.addColorStop(1, '#000000'); }
+          else if (highestRank === 'B') { bgGrd.addColorStop(0, '#c084fc'); bgGrd.addColorStop(1, '#000000'); }
+          else if (highestRank === 'C') { bgGrd.addColorStop(0, '#38bdf8'); bgGrd.addColorStop(1, '#000000'); }
+          else { bgGrd.addColorStop(0, '#1e3a8a'); bgGrd.addColorStop(1, '#000000'); }
+        } else {
+          bgGrd.addColorStop(0, '#ef4444'); bgGrd.addColorStop(1, '#0b0f19');
+        }
         ctx.fillStyle = bgGrd;
         ctx.fillRect(0, 0, w, h);
 
-        // パーティクル描画
-        particles.forEach(p => {
-          p.y -= p.speedY;
-          if (p.y < 0) p.y = h;
-          ctx.fillStyle = p.color;
+        // 衝撃波エフェクト
+        if (shockwaveRadius > 0 && shockwaveRadius < 300) {
+          ctx.strokeStyle = '#ffffff';
+          ctx.lineWidth = 6;
           ctx.beginPath();
-          ctx.arc(p.x, p.y, p.r, 0, Math.PI*2);
-          ctx.fill();
+          ctx.arc(w/2, h/2, shockwaveRadius, 0, Math.PI*2);
+          ctx.stroke();
+          shockwaveRadius += 12;
+        }
+
+        // パーティクルアニメーション
+        particles.forEach(p => {
+          p.x += p.vx;
+          p.y += p.vy;
+          p.life -= 0.015;
+          if (p.life > 0) {
+            ctx.fillStyle = p.color;
+            ctx.globalAlpha = p.life;
+            ctx.beginPath();
+            ctx.arc(p.x, p.y, p.r, 0, Math.PI*2);
+            ctx.fill();
+            ctx.globalAlpha = 1.0;
+          }
         });
 
         ctx.save();
         ctx.translate(w/2, h/2);
 
-        if (rank === 'PACK_INIT') {
-          // パックのゆらめき・立体感
-          let scale = 1 + Math.sin(animAngle)*0.03;
+        // 1. パック切り裂き＆スライド演出
+        if (animState === 'CUTTING' || animState === 'RESULT') {
+          if (packSplitProgress < 1) packSplitProgress += 0.06;
+          if (cardSlideProgress < 1) cardSlideProgress += 0.08;
+
+          // 背後のカード（引き裂かれた中からスライド出現）
+          ctx.save();
+          let slideY = (1 - cardSlideProgress) * 80;
+          ctx.translate(0, slideY);
+
+          let displayRank = (animState === 'RESULT') ? highestRank : 'C';
+          let cardGrd = ctx.createLinearGradient(-80, -120, 80, 120);
+          if (displayRank === 'S') { cardGrd.addColorStop(0, '#f43f5e'); cardGrd.addColorStop(1, '#fbbf24'); }
+          else if (displayRank === 'A') { cardGrd.addColorStop(0, '#f59e0b'); cardGrd.addColorStop(1, '#ef4444'); }
+          else if (displayRank === 'B') { cardGrd.addColorStop(0, '#c084fc'); cardGrd.addColorStop(1, '#f43f5e'); }
+          else if (displayRank === 'C') { cardGrd.addColorStop(0, '#38bdf8'); cardGrd.addColorStop(1, '#818cf8'); }
+          else { cardGrd.addColorStop(0, '#3b82f6'); cardGrd.addColorStop(1, '#1e293b'); }
+
+          ctx.fillStyle = cardGrd;
+          ctx.strokeStyle = ['S', 'A', 'B'].includes(displayRank) ? '#ffffff' : '#64748b';
+          ctx.lineWidth = 4;
+          ctx.beginPath();
+          ctx.roundRect(-80, -120, 160, 240, 12);
+          ctx.fill();
+          ctx.stroke();
+
+          ctx.fillStyle = '#ffffff';
+          ctx.font = '900 28px sans-serif';
+          ctx.textAlign = 'center';
+          ctx.fillText(displayRank + '賞', 0, -10);
+          ctx.restore();
+
+          // 前面の引き裂かれるパック左・右
+          if (packSplitProgress < 1) {
+            let splitX = packSplitProgress * 90;
+
+            // パック左半休
+            ctx.save();
+            ctx.translate(-splitX, 0);
+            ctx.fillStyle = '#b91c1c';
+            ctx.fillRect(-65, -105, 65, 210);
+            ctx.restore();
+
+            // パック右半休
+            ctx.save();
+            ctx.translate(splitX, 0);
+            ctx.fillStyle = '#ef4444';
+            ctx.fillRect(0, -105, 65, 210);
+            ctx.restore();
+          }
+        } 
+        // 2. パック初期状態（呼吸・ゆらめき）
+        else {
+          let scale = 1 + Math.sin(time*2)*0.03;
           ctx.scale(scale, scale);
 
-          let packGrd = ctx.createLinearGradient(-60, -100, 60, 100);
+          let packGrd = ctx.createLinearGradient(-65, -105, 65, 105);
           packGrd.addColorStop(0, '#ef4444');
           packGrd.addColorStop(0.5, '#fbbf24');
           packGrd.addColorStop(1, '#b91c1c');
@@ -709,48 +790,22 @@
           ctx.stroke();
 
           ctx.fillStyle = '#ffffff';
-          ctx.font = '900 18px sans-serif';
+          ctx.font = '900 20px sans-serif';
           ctx.textAlign = 'center';
           ctx.fillText('SPECIAL', 0, -20);
           ctx.fillText('ORIPA', 0, 15);
-        } else {
-          // カードの回転＆オープン
-          let cardGrd = ctx.createLinearGradient(-80, -120, 80, 120);
-          if (rank === 'S') { cardGrd.addColorStop(0, '#f43f5e'); cardGrd.addColorStop(1, '#fbbf24'); }
-          else if (rank === 'A') { cardGrd.addColorStop(0, '#f59e0b'); cardGrd.addColorStop(1, '#ef4444'); }
-          else if (rank === 'B') { cardGrd.addColorStop(0, '#c084fc'); cardGrd.addColorStop(1, '#f43f5e'); }
-          else if (rank === 'C') { cardGrd.addColorStop(0, '#38bdf8'); cardGrd.addColorStop(1, '#818cf8'); }
-          else { cardGrd.addColorStop(0, '#3b82f6'); cardGrd.addColorStop(1, '#1e293b'); }
+        }
 
-          ctx.fillStyle = cardGrd;
-          ctx.strokeStyle = ['S', 'A', 'B'].includes(rank) ? '#ffffff' : '#64748b';
-          ctx.lineWidth = 4;
-
-          ctx.beginPath();
-          ctx.roundRect(-80, -120, 160, 240, 12);
-          ctx.fill();
-          ctx.stroke();
-
-          ctx.fillStyle = '#ffffff';
-          ctx.font = '900 28px sans-serif';
-          ctx.textAlign = 'center';
-          ctx.fillText(rank + '賞', 0, -10);
-
-          if (mode === 'AD_CONFIRM') {
+        // 3. テロップ＆ひび割れ昇格ライン
+        if (animState === 'RESULT') {
+          if (['S', 'A'].includes(highestRank)) {
             ctx.fillStyle = '#fef08a';
             ctx.font = '900 20px sans-serif';
             ctx.fillText('🌈 爆アド確定！！ 🌈', 0, 45);
-          } else if (mode === 'REVERSE') {
-            // 画面ひび割れライン描画
-            ctx.strokeStyle = '#38bdf8';
-            ctx.lineWidth = 3;
-            ctx.beginPath();
-            ctx.moveTo(-70, -100); ctx.lineTo(-20, -10); ctx.lineTo(60, 90);
-            ctx.stroke();
-
+          } else if (highestRank === 'B') {
             ctx.fillStyle = '#fef08a';
             ctx.font = '900 20px sans-serif';
-            ctx.fillText('⚡ 逆転ラッシュ！ ⚡', 0, 45);
+            ctx.fillText('⚡ 逆転昇格！！ ⚡', 0, 45);
           }
         }
 
@@ -761,7 +816,7 @@
       render();
     }
 
-    // 黄金比【3.5秒】演出シーケンス
+    // パチンコ・オラオラ演出シーケンス制御
     function triggerPachinkoEffect() {
       const pushBtn = document.getElementById('pushBtn');
       const cutin = document.getElementById('cutinText');
@@ -771,34 +826,40 @@
       if (['S', 'A', 'B'].includes(highestRank)) {
         const isDirect = Math.random() > 0.4;
 
-        // 【ステップ1：0.0秒〜1.0秒】予兆
-        cutin.innerText = '⚡ チャージ中... ⚡';
-        startAnimLoop('PACK_INIT', 'EXTRECA');
+        // 【フェーズ1: 0.0〜0.8s】パック切り裂き＆スライド開始！
+        animState = 'CUTTING';
+        cutin.innerText = '⚡ 切り裂け！！ ⚡';
+        shockwaveRadius = 10;
+        createParticles(60, true);
 
         setTimeout(() => {
           if (isDirect) {
-            // 【ステップ2：1.0秒〜2.5秒】暗転フリーズ
+            // 【フェーズ2: 0.8〜2.3s】極重フリーズ暗転！
+            animState = 'BLACKOUT';
             cutin.innerText = '・・・・・・';
-            startAnimLoop('PACK_INIT', 'BLACKOUT');
 
             setTimeout(() => {
-              // 【ステップ3：2.5秒〜3.5秒】極太アド確定カットイン
+              // 【フェーズ3: 2.3〜3.5s】ドカンと爆アド開放！
+              animState = 'RESULT';
               cutin.innerText = highestRank === 'S' ? '🌈🔥【超絶爆アド確定！！】🔥🌈' : '🥇🔥【アド確定！！】🔥🥇';
-              startAnimLoop(highestRank, 'AD_CONFIRM');
+              shockwaveRadius = 10;
+              createParticles(80, true);
             }, 1500);
 
           } else {
-            // 【ステップ2：1.0秒〜2.5秒】クラッシュ逆転
+            // 【フェーズ2: 0.8〜2.3s】画面ひび割れ逆転タメ
+            animState = 'CUTTING';
             cutin.innerText = 'カードオープン...！';
-            startAnimLoop('C', 'EXTRECA');
 
             setTimeout(() => {
-              // 【ステップ3：2.5秒〜3.5秒】ガラス割れ＆昇格
-              cutin.innerText = `⚡ 画面割れ！${highestRank}賞へ逆転到達！！ ⚡`;
-              startAnimLoop(highestRank, 'REVERSE');
+              // 【フェーズ3: 2.3〜3.5s】一気の逆転昇格！
+              animState = 'RESULT';
+              cutin.innerText = `⚡ 昇格クラッシュ！${highestRank}賞到達！！ ⚡`;
+              shockwaveRadius = 10;
+              createParticles(80, true);
             }, 1500);
           }
-        }, 1000);
+        }, 800);
 
         setTimeout(() => {
           if (animFrameId) cancelAnimationFrame(animFrameId);
@@ -808,13 +869,15 @@
         }, 3500);
 
       } else {
-        // 通常演出
+        // 通常当たり演出
+        animState = 'CUTTING';
         cutin.innerText = 'カードオープン...';
-        startAnimLoop('PACK_INIT', 'EXTRECA');
+        shockwaveRadius = 10;
+        createParticles(30, true);
 
         setTimeout(() => {
+          animState = 'RESULT';
           cutin.innerText = highestRank === 'C' ? '🥈【C賞】優良カードHIT！' : '🔵【D賞】開封完了';
-          startAnimLoop(highestRank, 'EXTRECA');
         }, 800);
 
         setTimeout(() => {
