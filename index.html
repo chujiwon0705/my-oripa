@@ -3,11 +3,11 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>マイルドWebオリパ - 3.5秒黄金テンポ演出</title>
+  <title>超演出Webオリパ - エクストレカ風3D＆パーティクル版</title>
   <style>
     :root {
-      --bg-color: #0b0f19;
-      --card-bg: #1e293b;
+      --bg-color: #060913;
+      --card-bg: #111827;
       --accent-color: #38bdf8;
       --text-color: #f8fafc;
       --gold: #fbbf24;
@@ -37,7 +37,7 @@
       background-color: rgba(15, 23, 42, 0.95);
       backdrop-filter: blur(8px);
       text-align: center;
-      box-shadow: 0 4px 10px rgba(0,0,0,0.5);
+      box-shadow: 0 4px 15px rgba(0,0,0,0.8);
       position: sticky;
       top: 0;
       z-index: 10;
@@ -115,16 +115,17 @@
       background-color: var(--card-bg);
       border-radius: 1rem;
       padding: 1.25rem;
-      box-shadow: 0 10px 15px -3px rgba(0,0,0,0.5);
+      box-shadow: 0 10px 25px rgba(0,0,0,0.7);
       text-align: center;
-      border: 1px solid rgba(255,255,255,0.1);
+      border: 1px solid rgba(255,255,255,0.15);
       box-sizing: border-box;
     }
 
     .oripa-title {
-      font-size: 1.1rem;
+      font-size: 1.15rem;
       font-weight: bold;
       margin-bottom: 0.5rem;
+      color: #fca5a5;
     }
 
     .oripa-desc {
@@ -136,17 +137,19 @@
     .count-select {
       display: flex;
       justify-content: space-between;
-      gap: 0.5rem;
+      gap: 0.35rem;
       margin-bottom: 1rem;
+      flex-wrap: wrap;
     }
 
     .count-opt {
       flex: 1;
-      padding: 0.5rem;
-      background: rgba(0,0,0,0.3);
+      min-width: 60px;
+      padding: 0.5rem 0.25rem;
+      background: rgba(0,0,0,0.4);
       border: 1px solid rgba(255,255,255,0.2);
       border-radius: 0.5rem;
-      font-size: 0.85rem;
+      font-size: 0.8rem;
       font-weight: bold;
       cursor: pointer;
       text-align: center;
@@ -154,8 +157,9 @@
 
     .count-opt.selected {
       border-color: var(--gold);
-      background: rgba(251, 191, 36, 0.2);
+      background: rgba(251, 191, 36, 0.25);
       color: var(--gold);
+      box-shadow: 0 0 10px rgba(251, 191, 36, 0.3);
     }
 
     button.gacha-exec-btn {
@@ -168,7 +172,7 @@
       background: linear-gradient(135deg, #f59e0b, #ef4444);
       color: white;
       cursor: pointer;
-      box-shadow: 0 0 15px rgba(239, 68, 68, 0.4);
+      box-shadow: 0 0 20px rgba(239, 68, 68, 0.5);
       transition: transform 0.1s;
     }
 
@@ -205,38 +209,38 @@
     canvas#animCanvas {
       width: 100%;
       max-width: 400px;
-      height: 350px;
+      height: 380px;
       border-radius: 1rem;
     }
 
     .push-btn {
       position: absolute;
-      bottom: 15%;
-      width: 120px;
-      height: 120px;
+      bottom: 12%;
+      width: 125px;
+      height: 125px;
       border-radius: 50%;
-      background: radial-gradient(circle, #ef4444, #991b1b);
+      background: radial-gradient(circle, #ef4444, #7f1d1d);
       color: white;
-      font-size: 1.2rem;
+      font-size: 1.3rem;
       font-weight: 900;
       border: 6px solid #fca5a5;
-      box-shadow: 0 0 35px #ef4444;
+      box-shadow: 0 0 40px #ef4444;
       cursor: pointer;
-      animation: pulseBtn 0.5s infinite alternate;
+      animation: pulseBtn 0.45s infinite alternate;
       z-index: 10;
     }
 
     @keyframes pulseBtn {
-      from { transform: scale(0.95); }
-      to { transform: scale(1.1); }
+      from { transform: scale(0.95); box-shadow: 0 0 20px #ef4444; }
+      to { transform: scale(1.12); box-shadow: 0 0 50px #ef4444; }
     }
 
     .cutin-text {
       font-size: 1.8rem;
       font-weight: 900;
       text-align: center;
-      margin-top: 1rem;
-      text-shadow: 0 0 20px rgba(255,255,255,0.8);
+      margin-top: 0.5rem;
+      text-shadow: 0 0 20px rgba(255,255,255,0.9);
       z-index: 10;
     }
 
@@ -347,7 +351,7 @@
       cursor: pointer;
     }
 
-    /* 還元確認ダイアログ用モーダル */
+    /* 還元確認ダイアログ Modal */
     .confirm-box {
       background: var(--card-bg);
       border: 1px solid var(--accent-color);
@@ -425,6 +429,7 @@
         <div class="count-opt" onclick="selectCount(10, this)">10連</div>
         <div class="count-opt" onclick="selectCount(100, this)">100連</div>
         <div class="count-opt" onclick="selectCount(1000, this)">1,000連</div>
+        <div class="count-opt" id="optAll" onclick="selectCount('all', this)">残り全部</div>
       </div>
 
       <button id="gachaExecBtn" class="gacha-exec-btn" onclick="playGacha()">1連を引く (100 pt)</button>
@@ -434,7 +439,7 @@
   <!-- ガチャ演出 Modal -->
   <div id="gachaModal" class="modal">
     <div id="effectStage" class="effect-stage">
-      <canvas id="animCanvas" width="400" height="350"></canvas>
+      <canvas id="animCanvas" width="400" height="380"></canvas>
       <button id="pushBtn" class="push-btn" onclick="triggerPachinkoEffect()">PUSH!</button>
       <div id="cutinText" class="cutin-text">タップして開封！</div>
     </div>
@@ -473,7 +478,7 @@
     </div>
   </div>
 
-  <!-- 還元確認ポップアップダイアログ Modal -->
+  <!-- 還元確認 Modal -->
   <div id="confirmModal" class="modal" style="z-index: 200;">
     <div class="confirm-box">
       <div class="confirm-title">ポイント還元の確認</div>
@@ -490,10 +495,13 @@
     let stock = [];
     let currentPoints = 100000;
     let selectedGachaCount = 1;
+    let isSelectAllMode = false;
     let userInventory = [];
     let currentGachaResults = [];
     let highestRank = 'D';
     let pendingConvertAction = null;
+    let animTimer = null;
+    let particles = [];
 
     function initOripa() {
       currentPoints = 100000;
@@ -532,27 +540,61 @@
       }
 
       stock = slots;
-      updateUI();
+      
+      const firstOpt = document.querySelector('.count-opt');
+      if (firstOpt) selectCount(1, firstOpt);
+      else updateUI();
     }
 
     function selectCount(count, el) {
-      selectedGachaCount = count;
       document.querySelectorAll('.count-opt').forEach(opt => opt.classList.remove('selected'));
       el.classList.add('selected');
-      const cost = count * 100;
-      document.getElementById('gachaExecBtn').innerText = `${count.toLocaleString()}連を引く (${cost.toLocaleString()} pt)`;
+
+      if (count === 'all') {
+        isSelectAllMode = true;
+        selectedGachaCount = stock.length;
+      } else {
+        isSelectAllMode = false;
+        selectedGachaCount = count;
+      }
+      updateGachaBtnLabel();
+    }
+
+    function updateGachaBtnLabel() {
+      const btn = document.getElementById('gachaExecBtn');
+      if (stock.length === 0) {
+        btn.innerText = '完売しました';
+        btn.disabled = true;
+        return;
+      }
+      btn.disabled = false;
+
+      let actualCount = isSelectAllMode ? stock.length : selectedGachaCount;
+      const cost = actualCount * 100;
+      
+      if (isSelectAllMode) {
+        btn.innerText = `残り全部引く (${actualCount.toLocaleString()}連: ${cost.toLocaleString()} pt)`;
+      } else {
+        btn.innerText = `${actualCount.toLocaleString()}連を引く (${cost.toLocaleString()} pt)`;
+      }
     }
 
     function updateUI() {
       document.getElementById('pointCount').innerText = currentPoints.toLocaleString();
       document.getElementById('stockCount').innerText = stock.length;
       document.getElementById('invCountBadge').innerText = userInventory.length;
+
+      if (isSelectAllMode) {
+        selectedGachaCount = stock.length;
+      }
+      updateGachaBtnLabel();
     }
 
     function playGacha() {
-      const count = selectedGachaCount;
+      const count = isSelectAllMode ? stock.length : selectedGachaCount;
       const cost = count * 100;
 
+      if (count === 0) { alert('完売しています！'); return; }
       if (currentPoints < cost) { alert('ポイントが足りません！'); return; }
       if (stock.length < count) { alert('残り口数が足りません！'); return; }
 
@@ -583,93 +625,143 @@
 
       pushBtn.style.display = 'block';
       cutin.innerText = 'ボタンを叩け！！';
-      drawCardCanvas('PACK_INIT', 'EXTRECA');
+      initParticles();
+      startAnimLoop('PACK_INIT', 'EXTRECA');
       updateUI();
     }
 
-    function drawCardCanvas(rank, mode = 'EXTRECA') {
+    // パーティクル初期化
+    function initParticles() {
+      particles = [];
+      for(let i=0; i<40; i++) {
+        particles.push({
+          x: Math.random() * 400,
+          y: Math.random() * 380,
+          r: Math.random() * 3 + 1,
+          speedY: Math.random() * 1.5 + 0.5,
+          color: ['#fbbf24', '#f43f5e', '#38bdf8', '#ffffff'][Math.floor(Math.random()*4)]
+        });
+      }
+    }
+
+    // Canvasループアニメーション（光・回転・閃光）
+    let animFrameId = null;
+    let animAngle = 0;
+
+    function startAnimLoop(rank, mode = 'EXTRECA') {
+      if (animFrameId) cancelAnimationFrame(animFrameId);
+
       const canvas = document.getElementById('animCanvas');
       const ctx = canvas.getContext('2d');
       const w = canvas.width;
       const h = canvas.height;
 
-      ctx.clearRect(0, 0, w, h);
+      function render() {
+        animAngle += 0.05;
+        ctx.clearRect(0, 0, w, h);
 
-      if (mode === 'BLACKOUT') {
-        ctx.fillStyle = '#000000';
-        ctx.fillRect(0, 0, w, h);
-        return;
-      }
-
-      let bgGrd = ctx.createRadialGradient(w/2, h/2, 10, w/2, h/2, 220);
-      if (rank === 'S') { bgGrd.addColorStop(0, '#f43f5e'); bgGrd.addColorStop(1, '#000000'); }
-      else if (rank === 'A') { bgGrd.addColorStop(0, '#fbbf24'); bgGrd.addColorStop(1, '#000000'); }
-      else if (rank === 'B') { bgGrd.addColorStop(0, '#c084fc'); bgGrd.addColorStop(1, '#000000'); }
-      else if (rank === 'C') { bgGrd.addColorStop(0, '#38bdf8'); bgGrd.addColorStop(1, '#000000'); }
-      else { bgGrd.addColorStop(0, '#ef4444'); bgGrd.addColorStop(1, '#0b0f19'); }
-
-      ctx.fillStyle = bgGrd;
-      ctx.fillRect(0, 0, w, h);
-
-      ctx.save();
-      ctx.translate(w/2, h/2);
-
-      if (rank === 'PACK_INIT') {
-        let packGrd = ctx.createLinearGradient(-60, -100, 60, 100);
-        packGrd.addColorStop(0, '#ef4444');
-        packGrd.addColorStop(0.5, '#fbbf24');
-        packGrd.addColorStop(1, '#b91c1c');
-
-        ctx.fillStyle = packGrd;
-        ctx.strokeStyle = '#fef08a';
-        ctx.lineWidth = 3;
-        ctx.beginPath();
-        ctx.roundRect(-60, -100, 120, 200, 8);
-        ctx.fill();
-        ctx.stroke();
-
-        ctx.fillStyle = '#ffffff';
-        ctx.font = '900 16px sans-serif';
-        ctx.textAlign = 'center';
-        ctx.fillText('SPECIAL', 0, -20);
-        ctx.fillText('ORIPA', 0, 10);
-      } else {
-        let cardGrd = ctx.createLinearGradient(-80, -120, 80, 120);
-        if (rank === 'S') { cardGrd.addColorStop(0, '#f43f5e'); cardGrd.addColorStop(1, '#fbbf24'); }
-        else if (rank === 'A') { cardGrd.addColorStop(0, '#f59e0b'); cardGrd.addColorStop(1, '#ef4444'); }
-        else if (rank === 'B') { cardGrd.addColorStop(0, '#c084fc'); cardGrd.addColorStop(1, '#f43f5e'); }
-        else if (rank === 'C') { cardGrd.addColorStop(0, '#38bdf8'); cardGrd.addColorStop(1, '#818cf8'); }
-        else { cardGrd.addColorStop(0, '#3b82f6'); cardGrd.addColorStop(1, '#1e293b'); }
-
-        ctx.fillStyle = cardGrd;
-        ctx.strokeStyle = ['S', 'A', 'B'].includes(rank) ? '#ffffff' : '#64748b';
-        ctx.lineWidth = 4;
-
-        ctx.beginPath();
-        ctx.roundRect(-80, -120, 160, 240, 12);
-        ctx.fill();
-        ctx.stroke();
-
-        ctx.fillStyle = '#ffffff';
-        ctx.font = '900 24px sans-serif';
-        ctx.textAlign = 'center';
-        ctx.fillText(rank + '賞', 0, -10);
-
-        if (mode === 'AD_CONFIRM') {
-          ctx.fillStyle = '#fef08a';
-          ctx.font = '900 18px sans-serif';
-          ctx.fillText('🌈 爆アド確定！！ 🌈', 0, 40);
-        } else if (mode === 'REVERSE') {
-          ctx.fillStyle = '#fef08a';
-          ctx.font = '900 18px sans-serif';
-          ctx.fillText('⚡ 逆転ラッシュ！ ⚡', 0, 40);
+        if (mode === 'BLACKOUT') {
+          ctx.fillStyle = '#000000';
+          ctx.fillRect(0, 0, w, h);
+          return;
         }
+
+        // 背景ビーム＆オーラ
+        let bgGrd = ctx.createRadialGradient(w/2, h/2, 10, w/2, h/2, 220);
+        if (rank === 'S') { bgGrd.addColorStop(0, '#f43f5e'); bgGrd.addColorStop(1, '#000000'); }
+        else if (rank === 'A') { bgGrd.addColorStop(0, '#fbbf24'); bgGrd.addColorStop(1, '#000000'); }
+        else if (rank === 'B') { bgGrd.addColorStop(0, '#c084fc'); bgGrd.addColorStop(1, '#000000'); }
+        else if (rank === 'C') { bgGrd.addColorStop(0, '#38bdf8'); bgGrd.addColorStop(1, '#000000'); }
+        else { bgGrd.addColorStop(0, '#ef4444'); bgGrd.addColorStop(1, '#0b0f19'); }
+
+        ctx.fillStyle = bgGrd;
+        ctx.fillRect(0, 0, w, h);
+
+        // パーティクル描画
+        particles.forEach(p => {
+          p.y -= p.speedY;
+          if (p.y < 0) p.y = h;
+          ctx.fillStyle = p.color;
+          ctx.beginPath();
+          ctx.arc(p.x, p.y, p.r, 0, Math.PI*2);
+          ctx.fill();
+        });
+
+        ctx.save();
+        ctx.translate(w/2, h/2);
+
+        if (rank === 'PACK_INIT') {
+          // パックのゆらめき・立体感
+          let scale = 1 + Math.sin(animAngle)*0.03;
+          ctx.scale(scale, scale);
+
+          let packGrd = ctx.createLinearGradient(-60, -100, 60, 100);
+          packGrd.addColorStop(0, '#ef4444');
+          packGrd.addColorStop(0.5, '#fbbf24');
+          packGrd.addColorStop(1, '#b91c1c');
+
+          ctx.fillStyle = packGrd;
+          ctx.strokeStyle = '#fef08a';
+          ctx.lineWidth = 4;
+          ctx.beginPath();
+          ctx.roundRect(-65, -105, 130, 210, 10);
+          ctx.fill();
+          ctx.stroke();
+
+          ctx.fillStyle = '#ffffff';
+          ctx.font = '900 18px sans-serif';
+          ctx.textAlign = 'center';
+          ctx.fillText('SPECIAL', 0, -20);
+          ctx.fillText('ORIPA', 0, 15);
+        } else {
+          // カードの回転＆オープン
+          let cardGrd = ctx.createLinearGradient(-80, -120, 80, 120);
+          if (rank === 'S') { cardGrd.addColorStop(0, '#f43f5e'); cardGrd.addColorStop(1, '#fbbf24'); }
+          else if (rank === 'A') { cardGrd.addColorStop(0, '#f59e0b'); cardGrd.addColorStop(1, '#ef4444'); }
+          else if (rank === 'B') { cardGrd.addColorStop(0, '#c084fc'); cardGrd.addColorStop(1, '#f43f5e'); }
+          else if (rank === 'C') { cardGrd.addColorStop(0, '#38bdf8'); cardGrd.addColorStop(1, '#818cf8'); }
+          else { cardGrd.addColorStop(0, '#3b82f6'); cardGrd.addColorStop(1, '#1e293b'); }
+
+          ctx.fillStyle = cardGrd;
+          ctx.strokeStyle = ['S', 'A', 'B'].includes(rank) ? '#ffffff' : '#64748b';
+          ctx.lineWidth = 4;
+
+          ctx.beginPath();
+          ctx.roundRect(-80, -120, 160, 240, 12);
+          ctx.fill();
+          ctx.stroke();
+
+          ctx.fillStyle = '#ffffff';
+          ctx.font = '900 28px sans-serif';
+          ctx.textAlign = 'center';
+          ctx.fillText(rank + '賞', 0, -10);
+
+          if (mode === 'AD_CONFIRM') {
+            ctx.fillStyle = '#fef08a';
+            ctx.font = '900 20px sans-serif';
+            ctx.fillText('🌈 爆アド確定！！ 🌈', 0, 45);
+          } else if (mode === 'REVERSE') {
+            // 画面ひび割れライン描画
+            ctx.strokeStyle = '#38bdf8';
+            ctx.lineWidth = 3;
+            ctx.beginPath();
+            ctx.moveTo(-70, -100); ctx.lineTo(-20, -10); ctx.lineTo(60, 90);
+            ctx.stroke();
+
+            ctx.fillStyle = '#fef08a';
+            ctx.font = '900 20px sans-serif';
+            ctx.fillText('⚡ 逆転ラッシュ！ ⚡', 0, 45);
+          }
+        }
+
+        ctx.restore();
+        animFrameId = requestAnimationFrame(render);
       }
 
-      ctx.restore();
+      render();
     }
 
-    // 黄金比【3.5秒】タイムラインによる脳汁演出
+    // 黄金比【3.5秒】演出シーケンス
     function triggerPachinkoEffect() {
       const pushBtn = document.getElementById('pushBtn');
       const cutin = document.getElementById('cutinText');
@@ -679,53 +771,54 @@
       if (['S', 'A', 'B'].includes(highestRank)) {
         const isDirect = Math.random() > 0.4;
 
-        // 【ステップ1：0.0秒〜1.0秒】予兆（オーラ・チャージ）
-        cutin.innerText = '⚡ エネルギー充填中... ⚡';
-        drawCardCanvas('PACK_INIT', 'EXTRECA');
+        // 【ステップ1：0.0秒〜1.0秒】予兆
+        cutin.innerText = '⚡ チャージ中... ⚡';
+        startAnimLoop('PACK_INIT', 'EXTRECA');
 
         setTimeout(() => {
           if (isDirect) {
-            // 【ステップ2：1.0秒〜2.5秒】極限のフリーズ暗転（1.5秒間のタメ）
+            // 【ステップ2：1.0秒〜2.5秒】暗転フリーズ
             cutin.innerText = '・・・・・・';
-            drawCardCanvas('PACK_INIT', 'BLACKOUT');
+            startAnimLoop('PACK_INIT', 'BLACKOUT');
 
             setTimeout(() => {
-              // 【ステップ3：2.5秒〜3.5秒】覚醒・ドカン！！（1.0秒間の確定カットイン）
+              // 【ステップ3：2.5秒〜3.5秒】極太アド確定カットイン
               cutin.innerText = highestRank === 'S' ? '🌈🔥【超絶爆アド確定！！】🔥🌈' : '🥇🔥【アド確定！！】🔥🥇';
-              drawCardCanvas(highestRank, 'AD_CONFIRM');
+              startAnimLoop(highestRank, 'AD_CONFIRM');
             }, 1500);
 
           } else {
-            // 【ステップ2：1.0秒〜2.5秒】一瞬「C賞か…？」と思わせるタメ
+            // 【ステップ2：1.0秒〜2.5秒】クラッシュ逆転
             cutin.innerText = 'カードオープン...！';
-            drawCardCanvas('C', 'EXTRECA');
+            startAnimLoop('C', 'EXTRECA');
 
             setTimeout(() => {
-              // 【ステップ3：2.5秒〜3.5秒】クラッシュ逆転昇格！
-              cutin.innerText = `⚡ 昇格ラッシュ発生！${highestRank}賞へ到達！！ ⚡`;
-              drawCardCanvas(highestRank, 'REVERSE');
+              // 【ステップ3：2.5秒〜3.5秒】ガラス割れ＆昇格
+              cutin.innerText = `⚡ 画面割れ！${highestRank}賞へ逆転到達！！ ⚡`;
+              startAnimLoop(highestRank, 'REVERSE');
             }, 1500);
           }
         }, 1000);
 
-        // 合計3.5秒後に結果画面を開く
         setTimeout(() => {
+          if (animFrameId) cancelAnimationFrame(animFrameId);
           document.getElementById('effectStage').style.display = 'none';
           document.getElementById('resultContainer').style.display = 'block';
           renderResultList();
         }, 3500);
 
       } else {
-        // 通常当たり（1.8秒のショートテンポ）
+        // 通常演出
         cutin.innerText = 'カードオープン...';
-        drawCardCanvas('PACK_INIT', 'EXTRECA');
+        startAnimLoop('PACK_INIT', 'EXTRECA');
 
         setTimeout(() => {
           cutin.innerText = highestRank === 'C' ? '🥈【C賞】優良カードHIT！' : '🔵【D賞】開封完了';
-          drawCardCanvas(highestRank, 'EXTRECA');
+          startAnimLoop(highestRank, 'EXTRECA');
         }, 800);
 
         setTimeout(() => {
+          if (animFrameId) cancelAnimationFrame(animFrameId);
           document.getElementById('effectStage').style.display = 'none';
           document.getElementById('resultContainer').style.display = 'block';
           renderResultList();
