@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>2種ガチャ＆タブ切替 3D Webオリパ</title>
+  <title>超演出Webオリパ - モーダル演出版</title>
   <style>
     :root {
       --bg-color: #060913;
@@ -28,7 +28,7 @@
       flex-direction: column;
       align-items: center;
       min-height: 100vh;
-      padding-bottom: 4rem;
+      padding-bottom: 3rem;
     }
 
     header {
@@ -40,7 +40,7 @@
       box-shadow: 0 4px 15px rgba(0,0,0,0.8);
       position: sticky;
       top: 0;
-      z-index: 50;
+      z-index: 10;
     }
 
     h1 {
@@ -68,6 +68,13 @@
 
     .status-value { font-weight: bold; color: var(--gold); }
 
+    .header-btns {
+      display: flex;
+      gap: 0.5rem;
+      justify-content: center;
+      margin-top: 0.5rem;
+    }
+
     .reset-btn {
       background: #dc2626;
       color: white;
@@ -77,7 +84,17 @@
       font-size: 0.75rem;
       font-weight: bold;
       cursor: pointer;
-      margin-top: 0.5rem;
+    }
+
+    .nav-inv-btn {
+      background: #0284c7;
+      color: white;
+      border: none;
+      padding: 0.35rem 0.75rem;
+      border-radius: 0.25rem;
+      font-size: 0.75rem;
+      font-weight: bold;
+      cursor: pointer;
     }
 
     main {
@@ -87,21 +104,22 @@
       box-sizing: border-box;
       display: flex;
       flex-direction: column;
-      gap: 1.25rem;
+      gap: 1.5rem;
     }
 
-    .section-card {
+    .oripa-card {
       width: 100%;
       background-color: var(--card-bg);
       border-radius: 1rem;
       padding: 1.25rem;
       box-shadow: 0 10px 25px rgba(0,0,0,0.7);
+      text-align: center;
       border: 1px solid rgba(255,255,255,0.15);
       box-sizing: border-box;
     }
 
-    /* タブ切り替えボタン */
-    .tab-nav {
+    /* ガチャ切り替えタブ */
+    .gacha-tab-nav {
       display: flex;
       gap: 0.5rem;
       margin-bottom: 1rem;
@@ -109,7 +127,7 @@
       padding-bottom: 0.5rem;
     }
 
-    .tab-btn {
+    .gacha-tab-btn {
       flex: 1;
       padding: 0.6rem 0.3rem;
       background: rgba(0,0,0,0.4);
@@ -119,17 +137,16 @@
       font-size: 0.85rem;
       border-radius: 0.5rem;
       cursor: pointer;
-      text-align: center;
     }
 
-    .tab-btn.active {
+    .gacha-tab-btn.active {
       background: var(--accent-color);
       color: #000;
       border-color: var(--accent-color);
     }
 
-    .tab-content { display: none; }
-    .tab-content.active { display: block; }
+    .gacha-info-content { display: none; }
+    .gacha-info-content.active { display: block; }
 
     .count-select {
       display: flex;
@@ -141,12 +158,12 @@
 
     .count-opt {
       flex: 1;
-      min-width: 55px;
-      padding: 0.5rem 0.2rem;
+      min-width: 60px;
+      padding: 0.5rem 0.25rem;
       background: rgba(0,0,0,0.4);
       border: 1px solid rgba(255,255,255,0.2);
       border-radius: 0.5rem;
-      font-size: 0.75rem;
+      font-size: 0.8rem;
       font-weight: bold;
       cursor: pointer;
       text-align: center;
@@ -156,6 +173,7 @@
       border-color: var(--gold);
       background: rgba(251, 191, 36, 0.25);
       color: var(--gold);
+      box-shadow: 0 0 10px rgba(251, 191, 36, 0.3);
     }
 
     button.gacha-exec-btn {
@@ -164,31 +182,43 @@
       border: none;
       border-radius: 0.5rem;
       font-weight: 900;
-      font-size: 1.15rem;
+      font-size: 1.2rem;
       background: linear-gradient(135deg, #f59e0b, #ef4444);
       color: white;
       cursor: pointer;
       box-shadow: 0 0 20px rgba(239, 68, 68, 0.5);
     }
 
-    /* 3D 演出ステージ */
-    .stage-box {
-      height: 320px;
-      position: relative;
+    /* --- 全画面モーダル --- */
+    .modal {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background-color: rgba(0,0,0,0.95);
+      z-index: 100;
+      justify-content: center;
+      align-items: center;
+      flex-direction: column;
+      padding: 1rem;
+      overflow: hidden;
+    }
+
+    .modal.active { display: flex; }
+
+    .effect-stage {
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: center;
+      width: 100%;
+      height: 100%;
+      position: relative;
       perspective: 1000px;
-      background: radial-gradient(circle, #1e1b4b, #060913);
-      border-radius: 0.75rem;
-      overflow: hidden;
-      border: 1px solid rgba(255,255,255,0.1);
     }
 
     .card-3d-wrapper {
-      width: 180px;
-      height: 260px;
+      width: 220px;
+      height: 320px;
       position: relative;
       transform-style: preserve-3d;
       transition: transform 1.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
@@ -215,7 +245,7 @@
       background: linear-gradient(135deg, #ef4444, #991b1b, #450a0a);
       color: #fef08a;
       font-weight: 900;
-      font-size: 1.3rem;
+      font-size: 1.5rem;
       border-color: #fbbf24;
     }
 
@@ -229,32 +259,56 @@
 
     .push-btn {
       position: absolute;
-      bottom: 6%;
-      width: 100px;
-      height: 100px;
+      bottom: 8%;
+      width: 125px;
+      height: 125px;
       border-radius: 50%;
       background: radial-gradient(circle, #ef4444, #7f1d1d);
       color: white;
-      font-size: 1.1rem;
+      font-size: 1.3rem;
       font-weight: 900;
-      border: 4px solid #fca5a5;
-      box-shadow: 0 0 25px #ef4444;
+      border: 6px solid #fca5a5;
+      box-shadow: 0 0 40px #ef4444;
       cursor: pointer;
       animation: pulseBtn 0.45s infinite alternate;
       z-index: 20;
     }
 
     @keyframes pulseBtn {
-      from { transform: scale(0.95); }
-      to { transform: scale(1.1); }
+      from { transform: scale(0.95); box-shadow: 0 0 20px #ef4444; }
+      to { transform: scale(1.12); box-shadow: 0 0 50px #ef4444; }
     }
 
     .cutin-text {
-      font-size: 1.4rem;
+      font-size: 1.8rem;
       font-weight: 900;
       text-align: center;
-      margin-top: 0.75rem;
-      text-shadow: 0 0 15px rgba(255,255,255,0.9);
+      margin-top: 1rem;
+      text-shadow: 0 0 20px rgba(255,255,255,0.9);
+      z-index: 20;
+    }
+
+    .modal-content-box {
+      width: 100%;
+      max-width: 440px;
+      max-height: 80vh;
+      overflow-y: auto;
+      background: var(--card-bg);
+      border-radius: 0.75rem;
+      padding: 1.25rem;
+      border: 1px solid rgba(255,255,255,0.2);
+      box-sizing: border-box;
+    }
+
+    .sort-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: rgba(255,255,255,0.05);
+      padding: 0.4rem 0.6rem;
+      border-radius: 0.25rem;
+      margin-top: 0.5rem;
+      font-size: 0.8rem;
     }
 
     .sort-btn {
@@ -270,41 +324,31 @@
 
     .batch-header {
       display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 0.5rem;
-      background: rgba(0,0,0,0.3);
-      border-radius: 0.375rem;
+      flex-direction: column;
+      gap: 0.4rem;
       margin-top: 0.5rem;
-      font-size: 0.85rem;
+      padding: 0.5rem;
+      background: rgba(0,0,0,0.2);
+      border-radius: 0.375rem;
     }
 
-    .batch-btn {
-      background: var(--green);
-      color: white;
-      border: none;
-      padding: 0.4rem 0.8rem;
-      border-radius: 0.25rem;
-      font-weight: bold;
-      font-size: 0.8rem;
-      cursor: pointer;
-    }
+    .batch-actions { display: flex; justify-content: space-between; align-items: center; font-size: 0.85rem; }
+    .batch-sum { font-weight: bold; color: var(--gold); font-size: 0.9rem; text-align: right; }
+    .batch-btn { background: var(--green); color: white; border: none; padding: 0.4rem 0.8rem; border-radius: 0.25rem; font-weight: bold; font-size: 0.8rem; cursor: pointer; }
 
-    .card-list {
+    .result-list, .inventory-list {
       display: flex;
       flex-direction: column;
       gap: 0.5rem;
       margin-top: 0.75rem;
-      max-height: 300px;
-      overflow-y: auto;
     }
 
-    .card-item {
+    .result-item, .inventory-item {
       display: flex;
       justify-content: space-between;
       align-items: center;
       padding: 0.6rem;
-      background: rgba(0,0,0,0.4);
+      background: rgba(0,0,0,0.3);
       border-radius: 0.375rem;
       font-size: 0.85rem;
     }
@@ -340,17 +384,17 @@
       cursor: pointer;
     }
 
-    .confirm-overlay {
-      display: none;
-      position: fixed;
-      inset: 0;
-      background: rgba(0,0,0,0.85);
-      z-index: 100;
-      justify-content: center;
-      align-items: center;
+    .close-btn {
+      width: 100%;
+      margin-top: 1rem;
+      padding: 0.75rem;
+      background: #475569;
+      color: white;
+      border: none;
+      border-radius: 0.375rem;
+      font-weight: bold;
+      cursor: pointer;
     }
-
-    .confirm-overlay.active { display: flex; }
 
     .confirm-box {
       background: var(--card-bg);
@@ -364,127 +408,133 @@
 
     .confirm-pt { font-size: 1.5rem; font-weight: 900; color: var(--green); margin: 0.5rem 0; }
     .confirm-btn-group { display: flex; gap: 0.5rem; margin-top: 1rem; }
-    .confirm-yes { flex: 1; background: var(--green); color: white; border: none; padding: 0.6rem; border-radius: 0.25rem; font-weight: bold; cursor: pointer; }
-    .confirm-no { flex: 1; background: #64748b; color: white; border: none; padding: 0.6rem; border-radius: 0.25rem; font-weight: bold; cursor: pointer; }
+    .confirm-yes-btn { flex: 1; background: var(--green); color: white; border: none; padding: 0.6rem; border-radius: 0.25rem; font-weight: bold; cursor: pointer; }
+    .confirm-no-btn { flex: 1; background: #64748b; color: white; border: none; padding: 0.6rem; border-radius: 0.25rem; font-weight: bold; cursor: pointer; }
   </style>
 </head>
 <body>
 
   <header>
-    <h1>Webオリパ シミュレーター</h1>
+    <h1>マイルドWebオリパ (デモ)</h1>
     <div class="status-bar">
       <div class="status-item">所持pt: <span id="pointCount" class="status-value">100,000</span> pt</div>
       <div class="status-item">現在ガチャ残: <span id="stockCount" class="status-value">750</span>/750</div>
     </div>
-    <button class="reset-btn" onclick="initOripa()">最初からリセット</button>
+    <div class="header-btns">
+      <button class="nav-inv-btn" onclick="openInventoryModal()">📦 獲得商品一覧 (<span id="invCountBadge">0</span>)</button>
+      <button class="reset-btn" onclick="initOripa()">最初からリセット</button>
+    </div>
   </header>
 
   <main>
-    <!-- ① ガチャ切り替えタブ（同じ枠で2種） -->
-    <div class="section-card">
-      <div class="tab-nav">
-        <div class="tab-btn active" onclick="switchGachaType('mild', this)">🎰 マイルド (100pt)</div>
-        <div class="tab-btn" onclick="switchGachaType('high', this)">🔥 高額アド (1000pt)</div>
+    <div class="oripa-card">
+      <!-- ガチャ種類切り替えタブ -->
+      <div class="gacha-tab-nav">
+        <div class="gacha-tab-btn active" onclick="switchGachaType('mild', this)">🎰 マイルド (100pt)</div>
+        <div class="gacha-tab-btn" onclick="switchGachaType('high', this)">🔥 高額アド (1000pt)</div>
       </div>
 
-      <!-- マイルドガチャ詳細 -->
-      <div id="gachaMildContent" class="tab-content active">
-        <div style="font-weight:bold; color:#fca5a5; margin-bottom:0.25rem;">【1/15当たり】マイルドオリパ</div>
-        <div style="font-size:0.8rem; color:#94a3b8; margin-bottom:0.75rem;">S(12k) / A(4k) / B(2k) / C(500pt) 封入</div>
+      <div id="gachaMildInfo" class="gacha-info-content active">
+        <div class="oripa-title">【1/15当たり】マイルドオリパ</div>
+        <div style="font-size:0.85rem; color:#94a3b8; margin-bottom:1rem;">S(12k) / A(4k) / B(2k) / C(500pt) 封入！</div>
       </div>
 
-      <!-- 高額ガチャ詳細 -->
-      <div id="gachaHighContent" class="tab-content">
-        <div style="font-weight:bold; color:#f59e0b; margin-bottom:0.25rem;">【1/10当たり】高額一撃オリパ</div>
-        <div style="font-size:0.8rem; color:#94a3b8; margin-bottom:0.75rem;">S(10万pt) / A(3万pt) / B(1万pt) 封入</div>
+      <div id="gachaHighInfo" class="gacha-info-content">
+        <div class="oripa-title" style="color:#f59e0b;">【1/10当たり】高額一撃オリパ</div>
+        <div style="font-size:0.85rem; color:#94a3b8; margin-bottom:1rem;">S(10万pt) / A(3万pt) / B(1万pt) 封入！</div>
       </div>
 
       <div class="count-select">
         <div class="count-opt selected" onclick="selectCount(1, this)">1連</div>
         <div class="count-opt" onclick="selectCount(10, this)">10連</div>
         <div class="count-opt" onclick="selectCount(100, this)">100連</div>
-        <div class="count-opt" onclick="selectCount(1000, this)">1000連</div>
-        <div class="count-opt" onclick="selectCount('all', this)">残り全引き</div>
+        <div class="count-opt" onclick="selectCount(1000, this)">1,000連</div>
+        <div class="count-opt" id="optAll" onclick="selectCount('all', this)">残り全部</div>
       </div>
 
       <button id="gachaExecBtn" class="gacha-exec-btn" onclick="playGacha()">1連を引く (100 pt)</button>
     </div>
-
-    <!-- ② 演出ステージ -->
-    <div class="section-card">
-      <div style="font-weight:bold; color:var(--accent-color); margin-bottom:0.5rem;">🎬 開封演出</div>
-      <div class="stage-box">
-        <div id="card3dWrapper" class="card-3d-wrapper">
-          <div class="card-face card-back">
-            <div style="font-size:1.3rem;">SPECIAL</div>
-            <div style="font-size:1.6rem; color:#fff;">ORIPA</div>
-          </div>
-          <div id="cardFrontFace" class="card-face card-front rank-D">
-            <div id="cardFrontRank" style="font-size:2.2rem;">D賞</div>
-            <div id="cardFrontLabel" style="font-size:0.8rem; margin-top:0.5rem; text-align:center;">ノーマルカード</div>
-          </div>
-        </div>
-        <button id="pushBtn" class="push-btn" style="display:none;" onclick="triggerEffect()">PUSH!</button>
-      </div>
-      <div id="cutinText" class="cutin-text">ガチャを引いてね！</div>
-    </div>
-
-    <!-- ③ カード閲覧切り替えタブ（今回結果 ↔ 保有カード） -->
-    <div class="section-card">
-      <div class="tab-nav">
-        <div class="tab-btn active" onclick="switchViewTab('result', this)">🎉 今回の獲得結果</div>
-        <div class="tab-btn" onclick="switchViewTab('inventory', this)">📦 保有一覧 (<span id="invCount">0</span>)</div>
-      </div>
-
-      <!-- 今回の獲得結果ビュー -->
-      <div id="viewResultContent" class="tab-content active">
-        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.5rem;">
-          <span style="font-weight:bold; font-size:0.85rem;">獲得リスト</span>
-          <button class="sort-btn" onclick="toggleResSort()">並び替え: <span id="resSortLabel">引いた順</span></button>
-        </div>
-        <div class="batch-header">
-          <label><input type="checkbox" id="selectAllRes" onchange="toggleSelectAllRes(this)"> 全選択</label>
-          <div>選択額: <b id="resBatchSum" style="color:var(--gold);">0</b> pt</div>
-          <button class="batch-btn" onclick="requestConvertSelectedRes()">一括還元</button>
-        </div>
-        <div id="resultList" class="card-list">
-          <div style="color:#64748b; text-align:center; padding:1rem; font-size:0.85rem;">ここに引いた結果が表示されます</div>
-        </div>
-      </div>
-
-      <!-- 保有カード一覧ビュー -->
-      <div id="viewInventoryContent" class="tab-content">
-        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.5rem;">
-          <span style="font-weight:bold; font-size:0.85rem;">保有リスト</span>
-          <button class="sort-btn" onclick="toggleInvSort()">並び替え: <span id="invSortLabel">引いた順</span></button>
-        </div>
-        <div class="batch-header">
-          <label><input type="checkbox" id="selectAllInv" onchange="toggleSelectAllInv(this)"> 全選択</label>
-          <div>選択額: <b id="invBatchSum" style="color:var(--gold);">0</b> pt</div>
-          <button class="batch-btn" onclick="requestConvertSelectedInv()">一括還元</button>
-        </div>
-        <div id="inventoryList" class="card-list">
-          <div style="color:#64748b; text-align:center; padding:1rem; font-size:0.85rem;">獲得した未還元カードはありません</div>
-        </div>
-      </div>
-    </div>
   </main>
 
-  <!-- 還元確認モーダル -->
-  <div id="confirmOverlay" class="confirm-overlay">
+  <!-- ガチャ3D演出 Modal -->
+  <div id="gachaModal" class="modal">
+    <div id="effectStage" class="effect-stage">
+      
+      <div id="card3dWrapper" class="card-3d-wrapper">
+        <div class="card-face card-back">
+          <div style="font-size:1.8rem;">SPECIAL</div>
+          <div style="font-size:2rem; color:#fff;">ORIPA</div>
+          <div style="font-size:0.8rem; margin-top:1rem; opacity:0.8;">LIMITED EDITION</div>
+        </div>
+        <div id="cardFrontFace" class="card-face card-front rank-D">
+          <div id="cardFrontRank" style="font-size:2.5rem; text-shadow: 0 0 10px rgba(0,0,0,0.8);">D賞</div>
+          <div id="cardFrontLabel" style="font-size:0.9rem; margin-top:0.5rem; text-align:center;">ノーマルカード</div>
+        </div>
+      </div>
+
+      <button id="pushBtn" class="push-btn" onclick="triggerPachinkoEffect()">PUSH!</button>
+      <div id="cutinText" class="cutin-text">ボタンを叩け！！</div>
+    </div>
+
+    <div id="resultContainer" class="modal-content-box" style="display:none;">
+      <div style="text-align:center; font-size:1.2rem; font-weight:bold; color:var(--gold);">🎉 今回の獲得結果 🎉</div>
+      
+      <div class="sort-bar">
+        <span>並び替え順: <b id="resSortModeLabel">引いた順</b></span>
+        <button class="sort-btn" onclick="toggleResSortMode()">切替 (当たり順/引いた順)</button>
+      </div>
+
+      <div class="batch-header">
+        <div class="batch-actions">
+          <label><input type="checkbox" id="selectAllRes" onchange="toggleSelectAllRes(this)"> 全選択</label>
+          <button class="batch-btn" onclick="requestConvertSelectedRes()">選択カードを一括還元</button>
+        </div>
+        <div class="batch-sum">選択中還元額: <span id="resBatchSum">0</span> pt</div>
+      </div>
+
+      <div id="resultList" class="result-list"></div>
+      <button class="close-btn" onclick="closeGachaModal()">閉じる（商品一覧に保存）</button>
+    </div>
+  </div>
+
+  <!-- 獲得商品一覧 Modal -->
+  <div id="inventoryModal" class="modal">
+    <div class="modal-content-box">
+      <div style="text-align:center; font-size:1.2rem; font-weight:bold; color:var(--accent-color);">📦 獲得カード一覧</div>
+      
+      <div class="sort-bar">
+        <span>並び替え順: <b id="invSortModeLabel">引いた順</b></span>
+        <button class="sort-btn" onclick="toggleInvSortMode()">切替 (当たり順/引いた順)</button>
+      </div>
+
+      <div class="batch-header">
+        <div class="batch-actions">
+          <label><input type="checkbox" id="selectAllInv" onchange="toggleSelectAllInv(this)"> 全選択</label>
+          <button class="batch-btn" onclick="requestConvertSelectedInv()">選択したカードを一括還元</button>
+        </div>
+        <div class="batch-sum">選択中還元額: <span id="invBatchSum">0</span> pt</div>
+      </div>
+
+      <div id="inventoryList" class="inventory-list"></div>
+      <button class="close-btn" onclick="closeInventoryModal()">閉じる</button>
+    </div>
+  </div>
+
+  <!-- 還元確認 Modal -->
+  <div id="confirmModal" class="modal" style="z-index: 200;">
     <div class="confirm-box">
-      <div style="font-weight:bold; color:var(--gold); margin-bottom:0.5rem;">ポイント還元の確認</div>
-      <div>選択したカードをポイントに還元しますか？</div>
+      <div class="confirm-title">ポイント還元の確認</div>
+      <div>選択したカードを以下のポイントに還元してよろしいですか？</div>
       <div id="confirmPtDisplay" class="confirm-pt">+0 pt</div>
       <div class="confirm-btn-group">
-        <button class="confirm-yes" onclick="executePendingConvert()">還元する</button>
-        <button class="confirm-no" onclick="closeConfirmModal()">キャンセル</button>
+        <button class="confirm-yes-btn" onclick="executePendingConvert()">はい（還元する）</button>
+        <button class="confirm-no-btn" onclick="closeConfirmModal()">キャンセル</button>
       </div>
     </div>
   </div>
 
   <script>
-    let activeGachaType = 'mild'; // 'mild' or 'high'
+    let activeGachaType = 'mild';
     let stockMild = [], stockHigh = [];
     let currentPoints = 100000;
     let selectedGachaCount = 1;
@@ -503,9 +553,7 @@
     function initOripa() {
       currentPoints = 100000;
       userInventory = [];
-      currentGachaResults = [];
 
-      // マイルドオリパ (100pt / 750口)
       stockMild = buildStock(750, [
         { rank: 'S', label: '目玉カード (12,000 pt相当)', convertPt: 12000, count: 2 },
         { rank: 'A', label: '豪華カード (4,000 pt相当)', convertPt: 4000, count: 3 },
@@ -513,16 +561,15 @@
         { rank: 'C', label: '優良カード (500 pt相当)', convertPt: 500, count: 40 },
       ], { rank: 'D', label: 'ノーマルカード', convertPt: 1 });
 
-      // 高額オリパ (1,000pt / 100口)
       stockHigh = buildStock(100, [
         { rank: 'S', label: '超目玉PSA10 (100,000 pt相当)', convertPt: 100000, count: 1 },
         { rank: 'A', label: '高級SR (30,000 pt相当)', convertPt: 30000, count: 2 },
         { rank: 'B', label: '中当たり (10,000 pt相当)', convertPt: 10000, count: 7 },
       ], { rank: 'D', label: 'ハズレカード', convertPt: 100 });
 
-      updateUI();
-      renderInventory();
-      renderResultList();
+      const firstOpt = document.querySelector('.count-opt');
+      if (firstOpt) selectCount(1, firstOpt);
+      else updateUI();
     }
 
     function buildStock(total, hitsSpec, filler) {
@@ -554,28 +601,26 @@
 
     function switchGachaType(type, btnEl) {
       activeGachaType = type;
-      btnEl.parentElement.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+      btnEl.parentElement.querySelectorAll('.gacha-tab-btn').forEach(b => b.classList.remove('active'));
       btnEl.classList.add('active');
 
-      document.getElementById('gachaMildContent').classList.toggle('active', type === 'mild');
-      document.getElementById('gachaHighContent').classList.toggle('active', type === 'high');
+      document.getElementById('gachaMildInfo').classList.toggle('active', type === 'mild');
+      document.getElementById('gachaHighInfo').classList.toggle('active', type === 'high');
 
       updateUI();
-    }
-
-    function switchViewTab(view, btnEl) {
-      btnEl.parentElement.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-      btnEl.classList.add('active');
-
-      document.getElementById('viewResultContent').classList.toggle('active', view === 'result');
-      document.getElementById('viewInventoryContent').classList.toggle('active', view === 'inventory');
     }
 
     function selectCount(count, el) {
       document.querySelectorAll('.count-opt').forEach(opt => opt.classList.remove('selected'));
       el.classList.add('selected');
-      isSelectAllMode = (count === 'all');
-      selectedGachaCount = count;
+
+      if (count === 'all') {
+        isSelectAllMode = true;
+        selectedGachaCount = getCurrentStock().length;
+      } else {
+        isSelectAllMode = false;
+        selectedGachaCount = count;
+      }
       updateGachaBtnLabel();
     }
 
@@ -583,14 +628,16 @@
       const stock = getCurrentStock();
       const btn = document.getElementById('gachaExecBtn');
       if (stock.length === 0) {
-        btn.innerText = 'このガチャは完売しました';
+        btn.innerText = '完売しました';
         btn.disabled = true;
         return;
       }
       btn.disabled = false;
+
       const unitPrice = activeGachaType === 'mild' ? 100 : 1000;
       let actualCount = isSelectAllMode ? stock.length : selectedGachaCount;
       const cost = actualCount * unitPrice;
+      
       btn.innerText = `${actualCount.toLocaleString()}連を引く (${cost.toLocaleString()} pt)`;
     }
 
@@ -598,7 +645,9 @@
       const stock = getCurrentStock();
       document.getElementById('pointCount').innerText = currentPoints.toLocaleString();
       document.getElementById('stockCount').innerText = stock.length;
-      document.getElementById('invCount').innerText = userInventory.length;
+      document.getElementById('invCountBadge').innerText = userInventory.length;
+
+      if (isSelectAllMode) selectedGachaCount = stock.length;
       updateGachaBtnLabel();
     }
 
@@ -608,33 +657,42 @@
       const count = isSelectAllMode ? stock.length : selectedGachaCount;
       const cost = count * unitPrice;
 
-      if (count === 0 || currentPoints < cost || stock.length < count) {
-        alert('ポイントまたは残口数が足りません！');
-        return;
-      }
+      if (count === 0) { alert('完売しています！'); return; }
+      if (currentPoints < cost) { alert('ポイントが足りません！'); return; }
+      if (stock.length < count) { alert('残り口数が足りません！'); return; }
 
       currentPoints -= cost;
-      userInventory = userInventory.concat(currentGachaResults);
+
+      const modal = document.getElementById('gachaModal');
+      const stage = document.getElementById('effectStage');
+      const pushBtn = document.getElementById('pushBtn');
+      const cutin = document.getElementById('cutinText');
+      const resultContainer = document.getElementById('resultContainer');
+      const wrapper = document.getElementById('card3dWrapper');
+
+      modal.className = 'modal active';
+      stage.style.display = 'flex';
+      resultContainer.style.display = 'none';
+      wrapper.classList.remove('flipped');
+
       currentGachaResults = [];
       highestRankItem = { rank: 'D' };
 
       for(let i=0; i<count; i++) {
         let item = stock.pop();
         currentGachaResults.push(item);
+
         if (RANK_PRIORITY[item.rank] > RANK_PRIORITY[highestRankItem.rank]) {
           highestRankItem = item;
         }
       }
 
-      document.getElementById('card3dWrapper').classList.remove('flipped');
-      document.getElementById('pushBtn').style.display = 'block';
-      document.getElementById('cutinText').innerText = 'PUSHボタンを押せ！！';
-
+      pushBtn.style.display = 'block';
+      cutin.innerText = 'ボタンを叩け！！';
       updateUI();
-      renderInventory();
     }
 
-    function triggerEffect() {
+    function triggerPachinkoEffect() {
       const pushBtn = document.getElementById('pushBtn');
       const cutin = document.getElementById('cutinText');
       const wrapper = document.getElementById('card3dWrapper');
@@ -651,38 +709,45 @@
       // ★ アド確定は A賞・S賞 のみ！
       if (['S', 'A'].includes(highestRankItem.rank)) {
         cutin.innerText = '⚡ チャージ中... ⚡';
+
         setTimeout(() => {
           wrapper.classList.add('flipped');
           cutin.innerText = highestRankItem.rank === 'S' ? '🌈🔥【超絶爆アド確定！！】🔥🌈' : '🥇🔥【アド確定！！】🔥🥇';
-          renderResultList();
         }, 1200);
+
+        setTimeout(() => {
+          document.getElementById('effectStage').style.display = 'none';
+          document.getElementById('resultContainer').style.display = 'block';
+          renderResultList();
+        }, 3200);
+
       } else {
         cutin.innerText = 'カードオープン...';
+
         setTimeout(() => {
           wrapper.classList.add('flipped');
           if (highestRankItem.rank === 'B') cutin.innerText = '💜【B賞】人気カードHIT！';
           else if (highestRankItem.rank === 'C') cutin.innerText = '🥈【C賞】優良カードHIT！';
           else cutin.innerText = '🔵【D賞】開封完了';
-          renderResultList();
         }, 800);
+
+        setTimeout(() => {
+          document.getElementById('effectStage').style.display = 'none';
+          document.getElementById('resultContainer').style.display = 'block';
+          renderResultList();
+        }, 1800);
       }
     }
 
-    function toggleResSort() {
+    function toggleResSortMode() {
       resSortMode = resSortMode === 'PULL' ? 'RANK' : 'PULL';
-      document.getElementById('resSortLabel').innerText = resSortMode === 'PULL' ? '引いた順' : '当たり順';
+      document.getElementById('resSortModeLabel').innerText = resSortMode === 'PULL' ? '引いた順' : '当たり順';
       renderResultList();
     }
 
     function renderResultList() {
       const list = document.getElementById('resultList');
       list.innerHTML = '';
-
-      if (currentGachaResults.length === 0) {
-        list.innerHTML = '<div style="color:#64748b; text-align:center; padding:1rem; font-size:0.85rem;">ここに引いた結果が表示されます</div>';
-        updateResBatchSum();
-        return;
-      }
 
       let displayList = [...currentGachaResults];
       if (resSortMode === 'RANK') {
@@ -692,14 +757,14 @@
       displayList.forEach((res) => {
         const origIdx = currentGachaResults.indexOf(res);
         const div = document.createElement('div');
-        div.className = `card-item item-${res.rank}`;
+        div.className = `result-item item-${res.rank}`;
         div.innerHTML = `
           <div>
             <input type="checkbox" class="res-chk" data-idx="${origIdx}" data-pt="${res.convertPt}" onchange="updateResBatchSum()">
             <span class="badge badge-${res.rank}">${res.rank}賞</span>
             <span>${res.label}</span>
           </div>
-          <button class="convert-btn" onclick="requestConvertSingleRes(${origIdx})">+${res.convertPt} pt</button>
+          <button class="convert-btn" onclick="requestConvertSingleRes(${origIdx})">+${res.convertPt} pt還元</button>
         `;
         list.appendChild(div);
       });
@@ -708,13 +773,76 @@
 
     function updateResBatchSum() {
       let sum = 0;
-      document.querySelectorAll('.res-chk:checked').forEach(chk => sum += parseInt(chk.dataset.pt));
+      document.querySelectorAll('.res-chk:checked').forEach(chk => {
+        sum += parseInt(chk.dataset.pt);
+      });
       document.getElementById('resBatchSum').innerText = sum.toLocaleString();
     }
 
-    function toggleInvSort() {
+    function openConfirmModal(ptValue, actionFn) {
+      document.getElementById('confirmPtDisplay').innerText = `+${ptValue.toLocaleString()} pt`;
+      pendingConvertAction = actionFn;
+      document.getElementById('confirmModal').classList.add('active');
+    }
+
+    function closeConfirmModal() {
+      document.getElementById('confirmModal').classList.remove('active');
+      pendingConvertAction = null;
+    }
+
+    function executePendingConvert() {
+      if (pendingConvertAction) pendingConvertAction();
+      closeConfirmModal();
+    }
+
+    function requestConvertSingleRes(idx) {
+      const item = currentGachaResults[idx];
+      openConfirmModal(item.convertPt, () => {
+        currentGachaResults.splice(idx, 1);
+        currentPoints += item.convertPt;
+        updateUI();
+        renderResultList();
+      });
+    }
+
+    function requestConvertSelectedRes() {
+      const chks = document.querySelectorAll('.res-chk:checked');
+      if (chks.length === 0) { alert('還元するカードを選択してください'); return; }
+
+      let sum = 0;
+      chks.forEach(chk => sum += parseInt(chk.dataset.pt));
+
+      openConfirmModal(sum, () => {
+        const indices = Array.from(chks).map(c => parseInt(c.dataset.idx)).sort((a,b) => b-a);
+        indices.forEach(idx => {
+          const item = currentGachaResults.splice(idx, 1)[0];
+          currentPoints += item.convertPt;
+        });
+        document.getElementById('selectAllRes').checked = false;
+        updateUI();
+        renderResultList();
+      });
+    }
+
+    function closeGachaModal() {
+      userInventory = userInventory.concat(currentGachaResults);
+      currentGachaResults = [];
+      document.getElementById('gachaModal').className = 'modal';
+      updateUI();
+    }
+
+    function openInventoryModal() {
+      document.getElementById('inventoryModal').classList.add('active');
+      renderInventory();
+    }
+
+    function closeInventoryModal() {
+      document.getElementById('inventoryModal').classList.remove('active');
+    }
+
+    function toggleInvSortMode() {
       invSortMode = invSortMode === 'PULL' ? 'RANK' : 'PULL';
-      document.getElementById('invSortLabel').innerText = invSortMode === 'PULL' ? '引いた順' : '当たり順';
+      document.getElementById('invSortModeLabel').innerText = invSortMode === 'PULL' ? '引いた順' : '当たり順';
       renderInventory();
     }
 
@@ -723,7 +851,7 @@
       list.innerHTML = '';
 
       if (userInventory.length === 0) {
-        list.innerHTML = '<div style="color:#64748b; text-align:center; padding:1rem; font-size:0.85rem;">獲得した未還元カードはありません</div>';
+        list.innerHTML = '<div style="color:#64748b; font-size:0.85rem; padding:1.5rem; text-align:center;">未還元の獲得カードはありません</div>';
         updateInvBatchSum();
         return;
       }
@@ -736,14 +864,14 @@
       displayList.forEach((res) => {
         const origIdx = userInventory.indexOf(res);
         const div = document.createElement('div');
-        div.className = `card-item item-${res.rank}`;
+        div.className = `inventory-item item-${res.rank}`;
         div.innerHTML = `
           <div>
             <input type="checkbox" class="inv-chk" data-idx="${origIdx}" data-pt="${res.convertPt}" onchange="updateInvBatchSum()">
             <span class="badge badge-${res.rank}">${res.rank}賞</span>
             <span>${res.label}</span>
           </div>
-          <button class="convert-btn" onclick="requestConvertSingleInv(${origIdx})">+${res.convertPt} pt</button>
+          <button class="convert-btn" onclick="requestConvertSingleInv(${origIdx})">+${res.convertPt} pt還元</button>
         `;
         list.appendChild(div);
       });
@@ -752,52 +880,17 @@
 
     function updateInvBatchSum() {
       let sum = 0;
-      document.querySelectorAll('.inv-chk:checked').forEach(chk => sum += parseInt(chk.dataset.pt));
+      document.querySelectorAll('.inv-chk:checked').forEach(chk => {
+        sum += parseInt(chk.dataset.pt);
+      });
       document.getElementById('invBatchSum').innerText = sum.toLocaleString();
     }
 
-    function openConfirmModal(ptValue, actionFn) {
-      document.getElementById('confirmPtDisplay').innerText = `+${ptValue.toLocaleString()} pt`;
-      pendingConvertAction = actionFn;
-      document.getElementById('confirmOverlay').classList.add('active');
-    }
-
-    function closeConfirmModal() {
-      document.getElementById('confirmOverlay').classList.remove('active');
-      pendingConvertAction = null;
-    }
-
-    function executePendingConvert() {
-      if (pendingConvertAction) pendingConvertAction();
-      closeConfirmModal();
-    }
-
-    function requestConvertSingleRes(idx) {
-      openConfirmModal(currentGachaResults[idx].convertPt, () => {
-        currentPoints += currentGachaResults.splice(idx, 1)[0].convertPt;
-        updateUI();
-        renderResultList();
-      });
-    }
-
-    function requestConvertSelectedRes() {
-      const chks = document.querySelectorAll('.res-chk:checked');
-      if (chks.length === 0) return alert('還元するカードを選択してください');
-      let sum = 0;
-      chks.forEach(chk => sum += parseInt(chk.dataset.pt));
-
-      openConfirmModal(sum, () => {
-        const indices = Array.from(chks).map(c => parseInt(c.dataset.idx)).sort((a,b) => b-a);
-        indices.forEach(idx => currentPoints += currentGachaResults.splice(idx, 1)[0].convertPt);
-        document.getElementById('selectAllRes').checked = false;
-        updateUI();
-        renderResultList();
-      });
-    }
-
     function requestConvertSingleInv(idx) {
-      openConfirmModal(userInventory[idx].convertPt, () => {
-        currentPoints += userInventory.splice(idx, 1)[0].convertPt;
+      const item = userInventory[idx];
+      openConfirmModal(item.convertPt, () => {
+        userInventory.splice(idx, 1);
+        currentPoints += item.convertPt;
         updateUI();
         renderInventory();
       });
@@ -805,13 +898,17 @@
 
     function requestConvertSelectedInv() {
       const chks = document.querySelectorAll('.inv-chk:checked');
-      if (chks.length === 0) return alert('還元するカードを選択してください');
+      if (chks.length === 0) { alert('還元するカードを選択してください'); return; }
+
       let sum = 0;
       chks.forEach(chk => sum += parseInt(chk.dataset.pt));
 
       openConfirmModal(sum, () => {
         const indices = Array.from(chks).map(c => parseInt(c.dataset.idx)).sort((a,b) => b-a);
-        indices.forEach(idx => currentPoints += userInventory.splice(idx, 1)[0].convertPt);
+        indices.forEach(idx => {
+          const item = userInventory.splice(idx, 1)[0];
+          currentPoints += item.convertPt;
+        });
         document.getElementById('selectAllInv').checked = false;
         updateUI();
         renderInventory();
