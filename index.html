@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>マイルドWebオリパ - 脳汁演出＆コレクション版</title>
+  <title>マイルドWebオリパ - 10万ptデモ</title>
   <style>
     :root {
       --bg-color: #0b0f19;
@@ -53,6 +53,7 @@
       display: flex;
       gap: 0.75rem;
       justify-content: center;
+      align-items: center;
       flex-wrap: wrap;
       margin-top: 0.5rem;
       font-size: 0.85rem;
@@ -70,14 +71,32 @@
       color: var(--gold);
     }
 
-    .reset-btn {
+    .header-btns {
+      display: flex;
+      gap: 0.5rem;
+      justify-content: center;
       margin-top: 0.5rem;
+    }
+
+    .reset-btn {
       background: #dc2626;
       color: white;
       border: none;
-      padding: 0.25rem 0.75rem;
+      padding: 0.35rem 0.75rem;
       border-radius: 0.25rem;
       font-size: 0.75rem;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    .nav-inv-btn {
+      background: #0284c7;
+      color: white;
+      border: none;
+      padding: 0.35rem 0.75rem;
+      border-radius: 0.25rem;
+      font-size: 0.75rem;
+      font-weight: bold;
       cursor: pointer;
     }
 
@@ -91,7 +110,7 @@
       gap: 1.5rem;
     }
 
-    .oripa-card, .inventory-card {
+    .oripa-card {
       width: 100%;
       background-color: var(--card-bg);
       border-radius: 1rem;
@@ -157,7 +176,7 @@
       transform: scale(0.98);
     }
 
-    /* --- 演出モーダル --- */
+    /* --- モーダル共通 --- */
     .modal {
       display: none;
       position: fixed;
@@ -245,15 +264,15 @@
       80% { transform: translate(8px, 8px); }
     }
 
-    /* 結果画面 & 商品一覧 */
-    .result-container, .inventory-container {
+    /* 結果画面 & 商品一覧モーダル内部 */
+    .modal-content-box {
       width: 100%;
-      max-width: 420px;
-      max-height: 70vh;
+      max-width: 440px;
+      max-height: 80vh;
       overflow-y: auto;
       background: var(--card-bg);
       border-radius: 0.75rem;
-      padding: 1rem;
+      padding: 1.25rem;
       border: 1px solid rgba(255,255,255,0.2);
       box-sizing: border-box;
     }
@@ -321,6 +340,7 @@
       justify-content: space-between;
       align-items: center;
       margin-top: 0.5rem;
+      font-size: 0.85rem;
     }
 
     .batch-btn {
@@ -338,22 +358,23 @@
 <body>
 
   <header>
-    <h1>マイルドWebオリパ (脳汁演出デモ)</h1>
+    <h1>マイルドWebオリパ (デモ)</h1>
     <div class="status-bar">
-      <div class="status-item">所持金: <span id="moneyCount" class="status-value">10,000</span> 円</div>
+      <div class="status-item">所持pt: <span id="pointCount" class="status-value">100,000</span> pt</div>
       <div class="status-item">残数: <span id="stockCount" class="status-value">750</span>/750</div>
-      <div class="status-item">所持pt: <span id="pointCount" class="status-value">0</span> pt</div>
     </div>
-    <button class="reset-btn" onclick="initOripa()">最初からリセット</button>
+    <div class="header-btns">
+      <button class="nav-inv-btn" onclick="openInventoryModal()">📦 獲得商品一覧 (<span id="invCountBadge">0</span>)</button>
+      <button class="reset-btn" onclick="initOripa()">最初からリセット</button>
+    </div>
   </header>
 
   <main>
-    <!-- ガチャ実行カード -->
     <div class="oripa-card">
-      <div class="oripa-title">【1/15アド】マイルドオリパ 1口100円</div>
+      <div class="oripa-title">【1/15アド】マイルドオリパ 1口100 pt</div>
       <div class="oripa-desc">A賞・B賞・C賞(カード/1,000pt)封入！</div>
 
-      <!-- 回数選択チェック（ラジオ風ボタン） -->
+      <!-- 回数選択 -->
       <div class="count-select">
         <div class="count-opt selected" onclick="selectCount(1, this)">1連</div>
         <div class="count-opt" onclick="selectCount(10, this)">10連</div>
@@ -361,64 +382,61 @@
         <div class="count-opt" onclick="selectCount(1000, this)">1,000連</div>
       </div>
 
-      <button id="gachaExecBtn" class="gacha-exec-btn" onclick="playGacha()">1連を引く (100円)</button>
-    </div>
-
-    <!-- 未還元商品一覧カード -->
-    <div class="inventory-card">
-      <div style="font-weight:bold; font-size:1.05rem;">📦 未還元の獲得カード一覧</div>
-      <div class="batch-actions">
-        <label><input type="checkbox" id="selectAllInv" onchange="toggleSelectAllInv(this)"> 全選択</label>
-        <button class="batch-btn" onclick="convertSelectedInv()">選択したカードを一括還元</button>
-      </div>
-      <div id="inventoryList" class="inventory-list">
-        <div style="color:#64748b; font-size:0.85rem; padding:1rem;">獲得したカードがここにストックされます</div>
-      </div>
+      <button id="gachaExecBtn" class="gacha-exec-btn" onclick="playGacha()">1連を引く (100 pt)</button>
     </div>
   </main>
 
-  <!-- ガチャ演出モーダル -->
+  <!-- ガチャ演出 ＆ 結果モーダル -->
   <div id="gachaModal" class="modal">
     <div id="effectStage" class="effect-stage">
       <button id="pushBtn" class="push-btn" onclick="triggerPachinkoEffect()">PUSH!</button>
       <div id="cutinText" class="cutin-text">レバーを叩け！</div>
     </div>
 
-    <!-- 獲得結果モーダル内部 -->
-    <div id="resultContainer" class="result-container" style="display:none;">
+    <div id="resultContainer" class="modal-content-box" style="display:none;">
       <div style="text-align:center; font-size:1.2rem; font-weight:bold; color:var(--gold);">🎉 今回の獲得結果 🎉</div>
       <div class="batch-actions">
         <label><input type="checkbox" id="selectAllRes" onchange="toggleSelectAllRes(this)"> 全選択</label>
         <button class="batch-btn" onclick="convertSelectedRes()">選択カードを一括還元</button>
       </div>
       <div id="resultList" class="result-list"></div>
-      <button class="close-btn" onclick="closeModal()">閉じる（商品一覧に保存）</button>
+      <button class="close-btn" onclick="closeGachaModal()">閉じる（商品一覧に保存）</button>
+    </div>
+  </div>
+
+  <!-- 別画面：獲得商品一覧（コレクション）モーダル -->
+  <div id="inventoryModal" class="modal">
+    <div class="modal-content-box">
+      <div style="text-align:center; font-size:1.2rem; font-weight:bold; color:var(--accent-color);">📦 獲得カード一覧</div>
+      <div class="batch-actions">
+        <label><input type="checkbox" id="selectAllInv" onchange="toggleSelectAllInv(this)"> 全選択</label>
+        <button class="batch-btn" onclick="convertSelectedInv()">選択したカードを一括還元</button>
+      </div>
+      <div id="inventoryList" class="inventory-list"></div>
+      <button class="close-btn" onclick="closeInventoryModal()">閉じる</button>
     </div>
   </div>
 
   <script>
     let stock = [];
-    let currentMoney = 10000;
-    let currentPoints = 0;
+    let currentPoints = 100000;
     let selectedGachaCount = 1;
     let userInventory = []; // 未還元カード保持
     let currentGachaResults = []; // 今回のガチャ結果
 
     function initOripa() {
-      currentMoney = 10000;
-      currentPoints = 0;
+      currentPoints = 100000;
       stock = [];
       userInventory = [];
 
-      for(let i=0; i<2; i++) stock.push({ id: Math.random(), rank: 'A', label: '目玉カード (12,000円相当)', convertPt: 12000 });
-      for(let i=0; i<3; i++) stock.push({ id: Math.random(), rank: 'B', label: '豪華SR・パラレル (2,000円相当)', convertPt: 2000 });
-      for(let i=0; i<33; i++) stock.push({ id: Math.random(), rank: 'C', label: '優良カード (500円相当)', convertPt: 500 });
+      for(let i=0; i<2; i++) stock.push({ id: Math.random(), rank: 'A', label: '目玉カード (12,000 pt相当)', convertPt: 12000 });
+      for(let i=0; i<3; i++) stock.push({ id: Math.random(), rank: 'B', label: '豪華SR・パラレル (2,000 pt相当)', convertPt: 2000 });
+      for(let i=0; i<33; i++) stock.push({ id: Math.random(), rank: 'C', label: '優良カード (500 pt相当)', convertPt: 500 });
       for(let i=0; i<12; i++) stock.push({ id: Math.random(), rank: 'C', label: '1,000ポイント', isPoint: true, ptValue: 1000, convertPt: 0 });
       for(let i=0; i<700; i++) stock.push({ id: Math.random(), rank: 'D', label: 'ノーマルカード', convertPt: 1 });
 
       stock.sort(() => Math.random() - 0.5);
       updateUI();
-      renderInventory();
     }
 
     function selectCount(count, el) {
@@ -426,13 +444,13 @@
       document.querySelectorAll('.count-opt').forEach(opt => opt.classList.remove('selected'));
       el.classList.add('selected');
       const cost = count * 100;
-      document.getElementById('gachaExecBtn').innerText = `${count.toLocaleString()}連を引く (${cost.toLocaleString()}円)`;
+      document.getElementById('gachaExecBtn').innerText = `${count.toLocaleString()}連を引く (${cost.toLocaleString()} pt)`;
     }
 
     function updateUI() {
-      document.getElementById('moneyCount').innerText = currentMoney.toLocaleString();
-      document.getElementById('stockCount').innerText = stock.length;
       document.getElementById('pointCount').innerText = currentPoints.toLocaleString();
+      document.getElementById('stockCount').innerText = stock.length;
+      document.getElementById('invCountBadge').innerText = userInventory.length;
     }
 
     let pendingGachaRank = 'blue';
@@ -441,10 +459,10 @@
       const count = selectedGachaCount;
       const cost = count * 100;
 
-      if (currentMoney < cost) { alert('所持金が足りません！'); return; }
+      if (currentPoints < cost) { alert('ポイントが足りません！'); return; }
       if (stock.length < count) { alert('残り口数が足りません！'); return; }
 
-      currentMoney -= cost;
+      currentPoints -= cost;
 
       const modal = document.getElementById('gachaModal');
       const stage = document.getElementById('effectStage');
@@ -464,7 +482,7 @@
         if (!item.isPoint) {
           currentGachaResults.push(item);
         } else {
-          currentPoints += item.ptValue; // ポイントは即加算
+          currentPoints += item.ptValue; // ポイント当たりは即還元
         }
 
         if (item.rank === 'A') pendingGachaRank = 'rainbow';
@@ -497,7 +515,7 @@
         cutin.innerText = '🥈【銀】優良カードHIT！';
       } else if (pendingGachaRank === 'red') {
         modal.classList.add('flash-red');
-        cutin.innerText = '🔴【赤】1,000pt獲得！';
+        cutin.innerText = '🔴【赤】1,000 pt獲得！';
       } else {
         modal.classList.add('flash-blue');
         cutin.innerText = '🔵【青】開封完了';
@@ -528,7 +546,7 @@
             <span class="badge badge-${res.rank}">${res.rank}賞</span>
             <span>${res.label}</span>
           </div>
-          <button class="convert-btn" onclick="convertSingleRes(${idx})">+${res.convertPt}pt</button>
+          <button class="convert-btn" onclick="convertSingleRes(${idx})">+${res.convertPt} pt</button>
         `;
         list.appendChild(div);
       });
@@ -559,20 +577,29 @@
       renderResultList();
     }
 
-    function closeModal() {
+    function closeGachaModal() {
       userInventory = userInventory.concat(currentGachaResults);
       currentGachaResults = [];
       document.getElementById('gachaModal').className = 'modal';
+      updateUI();
+    }
+
+    /* --- 商品一覧（コレクション）モーダル制御 --- */
+    function openInventoryModal() {
+      document.getElementById('inventoryModal').classList.add('active');
       renderInventory();
     }
 
-    /* --- 未還元一覧側の制御 --- */
+    function closeInventoryModal() {
+      document.getElementById('inventoryModal').classList.remove('active');
+    }
+
     function renderInventory() {
       const list = document.getElementById('inventoryList');
       list.innerHTML = '';
 
       if (userInventory.length === 0) {
-        list.innerHTML = '<div style="color:#64748b; font-size:0.85rem; padding:1rem; text-align:center;">未還元の所持カードはありません</div>';
+        list.innerHTML = '<div style="color:#64748b; font-size:0.85rem; padding:1.5rem; text-align:center;">未還元の獲得カードはありません</div>';
         return;
       }
 
@@ -585,7 +612,7 @@
             <span class="badge badge-${res.rank}">${res.rank}賞</span>
             <span>${res.label}</span>
           </div>
-          <button class="convert-btn" onclick="convertSingleInv(${idx})">+${res.convertPt}pt還元</button>
+          <button class="convert-btn" onclick="convertSingleInv(${idx})">+${res.convertPt} pt還元</button>
         `;
         list.appendChild(div);
       });
