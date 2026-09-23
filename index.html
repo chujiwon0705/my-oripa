@@ -585,8 +585,8 @@
     let currentGachaResults = [];
     let highestRankItem = null;
 
-    let resSortMode = 'PULL'; // PULL or RANK
-    let invSortMode = 'PULL'; // PULL or RANK
+    let resSortMode = 'PULL';
+    let invSortMode = 'PULL';
 
     let pendingConvertAction = null;
 
@@ -718,7 +718,6 @@
       updateUI();
     }
 
-    // 3D演出 黄金タイムライン
     function triggerPachinkoEffect() {
       const pushBtn = document.getElementById('pushBtn');
       const cutin = document.getElementById('cutinText');
@@ -729,7 +728,6 @@
 
       pushBtn.style.display = 'none';
 
-      // 表カードのスタイル＆テキスト準備
       frontFace.className = `card-face card-front rank-${highestRankItem.rank}`;
       frontRank.innerText = `${highestRankItem.rank}賞`;
       frontLabel.innerText = highestRankItem.label;
@@ -737,26 +735,21 @@
       if (['S', 'A', 'B'].includes(highestRankItem.rank)) {
         const isDirect = Math.random() > 0.4;
 
-        // 1. 予兆（0.0s - 1.0s）
         cutin.innerText = '⚡ チャージ中... ⚡';
 
         setTimeout(() => {
           if (isDirect) {
-            // 2. 暗転フリーズ (1.0s - 2.5s)
             cutin.innerText = '・・・・・・';
 
             setTimeout(() => {
-              // 3. 3Dフリップ＆爆アド確定！ (2.5s - 3.5s)
               wrapper.classList.add('flipped');
               cutin.innerText = highestRankItem.rank === 'S' ? '🌈🔥【超絶爆アド確定！！】🔥🌈' : '🥇🔥【アド確定！！】🔥🥇';
             }, 1500);
 
           } else {
-            // 2. 逆転昇格ルート (1.0s - 2.5s)
             cutin.innerText = 'カードオープン...！';
 
             setTimeout(() => {
-              // 3. 破砕クラッシュ＆フリップ
               wrapper.classList.add('flipped');
               cutin.innerText = `⚡ 昇格クラッシュ！${highestRankItem.rank}賞到達！！ ⚡`;
             }, 1500);
@@ -770,7 +763,6 @@
         }, 3500);
 
       } else {
-        // 通常当たり（1.8秒）
         cutin.innerText = 'カードオープン...';
 
         setTimeout(() => {
@@ -786,7 +778,6 @@
       }
     }
 
-    // 結果表示＆ソート制御
     function toggleResSortMode() {
       resSortMode = resSortMode === 'PULL' ? 'RANK' : 'PULL';
       document.getElementById('resSortModeLabel').innerText = resSortMode === 'PULL' ? '引いた順' : '当たり順';
@@ -881,7 +872,6 @@
       updateUI();
     }
 
-    /* --- 獲得商品一覧モーダル --- */
     function openInventoryModal() {
       document.getElementById('inventoryModal').classList.add('active');
       renderInventory();
