@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>マイルドWebオリパ - デモ</title>
+  <title>マイルドWebオリパ - アド確定＆逆転演出版</title>
   <style>
     :root {
       --bg-color: #0b0f19;
@@ -176,7 +176,7 @@
       transform: scale(0.98);
     }
 
-    /* --- モーダル共通 --- */
+    /* --- 演出モーダル --- */
     .modal {
       display: none;
       position: fixed;
@@ -199,58 +199,48 @@
       justify-content: center;
       width: 100%;
       height: 100%;
+      position: relative;
+    }
+
+    canvas#animCanvas {
+      width: 100%;
+      max-width: 400px;
+      height: 350px;
+      border-radius: 1rem;
     }
 
     .push-btn {
-      width: 120px;
-      height: 120px;
+      position: absolute;
+      bottom: 15%;
+      width: 110px;
+      height: 110px;
       border-radius: 50%;
       background: radial-gradient(circle, #ef4444, #991b1b);
       color: white;
       font-size: 1.2rem;
       font-weight: 900;
-      border: 6px solid #fca5a5;
+      border: 5px solid #fca5a5;
       box-shadow: 0 0 30px #ef4444;
       cursor: pointer;
       animation: pulseBtn 0.6s infinite alternate;
-      display: none;
+      z-index: 10;
     }
 
     @keyframes pulseBtn {
-      from { transform: scale(0.95); box-shadow: 0 0 20px #ef4444; }
-      to { transform: scale(1.1); box-shadow: 0 0 40px #ef4444; }
+      from { transform: scale(0.95); }
+      to { transform: scale(1.1); }
     }
 
     .cutin-text {
-      font-size: 2rem;
+      font-size: 1.8rem;
       font-weight: 900;
       text-align: center;
       margin-top: 1rem;
       text-shadow: 0 0 20px rgba(255,255,255,0.8);
+      z-index: 10;
     }
 
-    /* 演出カラーフラッシュ */
-    .flash-rainbow { animation: rainbowFlash 0.3s infinite alternate; }
-    .flash-gold { animation: goldFlash 0.4s infinite alternate; }
-    .flash-silver { animation: silverFlash 0.5s infinite alternate; }
-    .flash-blue { background-color: rgba(15, 23, 42, 0.95); }
-
-    @keyframes rainbowFlash {
-      0% { background-color: rgba(236, 72, 153, 0.9); }
-      33% { background-color: rgba(251, 191, 36, 0.9); }
-      66% { background-color: rgba(56, 189, 248, 0.9); }
-      100% { background-color: rgba(168, 85, 247, 0.9); }
-    }
-    @keyframes goldFlash {
-      0% { background-color: rgba(180, 83, 9, 0.9); }
-      100% { background-color: rgba(251, 191, 36, 0.95); }
-    }
-    @keyframes silverFlash {
-      0% { background-color: rgba(30, 41, 59, 0.95); }
-      100% { background-color: rgba(226, 232, 240, 0.6); }
-    }
-
-    /* 結果画面 & 商品一覧モーダル内部 */
+    /* 結果画面 & モーダル内リスト */
     .modal-content-box {
       width: 100%;
       max-width: 440px;
@@ -280,9 +270,9 @@
       font-size: 0.85rem;
     }
 
+    .item-S { border-left: 4px solid #f43f5e; background: rgba(244, 63, 94, 0.2); }
     .item-A { border-left: 4px solid var(--gold); background: rgba(251, 191, 36, 0.15); }
     .item-B { border-left: 4px solid var(--purple); background: rgba(192, 132, 252, 0.15); }
-    .item-C { border-left: 4px solid var(--accent-color); }
     .item-D { border-left: 4px solid #64748b; }
 
     .badge {
@@ -293,9 +283,9 @@
       margin-right: 0.3rem;
     }
 
+    .badge-S { background: linear-gradient(135deg, #f43f5e, #fbbf24); color: white; }
     .badge-A { background: linear-gradient(135deg, #fbbf24, #ef4444); color: black; }
     .badge-B { background: var(--gold); color: black; }
-    .badge-C { background: var(--silver); color: black; }
     .badge-D { background: var(--blue); color: white; }
 
     .convert-btn {
@@ -321,12 +311,28 @@
       cursor: pointer;
     }
 
+    .batch-header {
+      display: flex;
+      flex-direction: column;
+      gap: 0.4rem;
+      margin-top: 0.5rem;
+      padding: 0.5rem;
+      background: rgba(0,0,0,0.2);
+      border-radius: 0.375rem;
+    }
+
     .batch-actions {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      margin-top: 0.5rem;
       font-size: 0.85rem;
+    }
+
+    .batch-sum {
+      font-weight: bold;
+      color: var(--gold);
+      font-size: 0.9rem;
+      text-align: right;
     }
 
     .batch-btn {
@@ -358,7 +364,7 @@
   <main>
     <div class="oripa-card">
       <div class="oripa-title">【1/15当たり】マイルドオリパ 1口100 pt</div>
-      <div class="oripa-desc">A賞(12,000pt) / B賞(2,000pt) / C賞(500pt) 封入！</div>
+      <div class="oripa-desc">S賞(12,000pt) / A賞(2,000pt) / B賞(500pt) 封入！</div>
 
       <!-- 回数選択 -->
       <div class="count-select">
@@ -372,19 +378,25 @@
     </div>
   </main>
 
-  <!-- ガチャ演出 ＆ 結果モーダル -->
+  <!-- ガチャ動画風アニメーション Canvas ＆ 結果モーダル -->
   <div id="gachaModal" class="modal">
     <div id="effectStage" class="effect-stage">
+      <canvas id="animCanvas" width="400" height="350"></canvas>
       <button id="pushBtn" class="push-btn" onclick="triggerPachinkoEffect()">PUSH!</button>
-      <div id="cutinText" class="cutin-text">レバーを叩け！</div>
+      <div id="cutinText" class="cutin-text">タップして開封！</div>
     </div>
 
     <div id="resultContainer" class="modal-content-box" style="display:none;">
       <div style="text-align:center; font-size:1.2rem; font-weight:bold; color:var(--gold);">🎉 今回の獲得結果 🎉</div>
-      <div class="batch-actions">
-        <label><input type="checkbox" id="selectAllRes" onchange="toggleSelectAllRes(this)"> 全選択</label>
-        <button class="batch-btn" onclick="convertSelectedRes()">選択カードを一括還元</button>
+      
+      <div class="batch-header">
+        <div class="batch-actions">
+          <label><input type="checkbox" id="selectAllRes" onchange="toggleSelectAllRes(this)"> 全選択</label>
+          <button class="batch-btn" onclick="convertSelectedRes()">選択カードを一括還元</button>
+        </div>
+        <div class="batch-sum">選択中還元額: <span id="resBatchSum">0</span> pt</div>
       </div>
+
       <div id="resultList" class="result-list"></div>
       <button class="close-btn" onclick="closeGachaModal()">閉じる（商品一覧に保存）</button>
     </div>
@@ -394,10 +406,15 @@
   <div id="inventoryModal" class="modal">
     <div class="modal-content-box">
       <div style="text-align:center; font-size:1.2rem; font-weight:bold; color:var(--accent-color);">📦 獲得カード一覧</div>
-      <div class="batch-actions">
-        <label><input type="checkbox" id="selectAllInv" onchange="toggleSelectAllInv(this)"> 全選択</label>
-        <button class="batch-btn" onclick="convertSelectedInv()">選択したカードを一括還元</button>
+      
+      <div class="batch-header">
+        <div class="batch-actions">
+          <label><input type="checkbox" id="selectAllInv" onchange="toggleSelectAllInv(this)"> 全選択</label>
+          <button class="batch-btn" onclick="convertSelectedInv()">選択したカードを一括還元</button>
+        </div>
+        <div class="batch-sum">選択中還元額: <span id="invBatchSum">0</span> pt</div>
       </div>
+
       <div id="inventoryList" class="inventory-list"></div>
       <button class="close-btn" onclick="closeInventoryModal()">閉じる</button>
     </div>
@@ -409,6 +426,7 @@
     let selectedGachaCount = 1;
     let userInventory = [];
     let currentGachaResults = [];
+    let highestRank = 'D';
 
     function initOripa() {
       currentPoints = 100000;
@@ -417,33 +435,28 @@
       const TOTAL_SLOTS = 750;
       let slots = new Array(TOTAL_SLOTS).fill(null);
 
-      // 当たりアイテムリスト作成（全50口）
+      // 当たりアイテム（S賞: 2口, A賞: 3口, B賞: 45口）
       let hits = [];
-      for(let i=0; i<2; i++) hits.push({ rank: 'A', label: '目玉カード (12,000 pt相当)', convertPt: 12000 });
-      for(let i=0; i<3; i++) hits.push({ rank: 'B', label: '豪華SR・パラレル (2,000 pt相当)', convertPt: 2000 });
-      for(let i=0; i<45; i++) hits.push({ rank: 'C', label: '優良カード (500 pt相当)', convertPt: 500 });
+      for(let i=0; i<2; i++) hits.push({ rank: 'S', label: '目玉カード (12,000 pt相当)', convertPt: 12000 });
+      for(let i=0; i<3; i++) hits.push({ rank: 'A', label: '豪華SR・パラレル (2,000 pt相当)', convertPt: 2000 });
+      for(let i=0; i<45; i++) hits.push({ rank: 'B', label: '優良カード (500 pt相当)', convertPt: 500 });
       
-      // 当たりを完全ランダムにシャッフル
       hits.sort(() => Math.random() - 0.5);
 
-      // 当たりが固まらないよう、750口の範囲内に均等分散配置
       let hitCount = hits.length;
-      let step = TOTAL_SLOTS / hitCount; // 約15口ごとに1つ
+      let step = TOTAL_SLOTS / hitCount;
 
       hits.forEach((hitItem, idx) => {
-        // 基本位置（例: 15, 30, 45...）＋ ±4口のランダムジッター（分散保持）
         let basePos = Math.floor(idx * step);
         let jitter = Math.floor(Math.random() * 9) - 4;
         let pos = Math.max(0, Math.min(TOTAL_SLOTS - 1, basePos + jitter));
 
-        // すでに埋まっていた場合は一番近い空きスロットを探す
         while (slots[pos] !== null) {
           pos = (pos + 1) % TOTAL_SLOTS;
         }
         slots[pos] = hitItem;
       });
 
-      // 空いている場所をすべて D賞（ハズレ）で埋める
       for (let i = 0; i < TOTAL_SLOTS; i++) {
         if (slots[i] === null) {
           slots[i] = { rank: 'D', label: 'ノーマルカード', convertPt: 1 };
@@ -469,8 +482,6 @@
       document.getElementById('invCountBadge').innerText = userInventory.length;
     }
 
-    let pendingGachaRank = 'blue';
-
     function playGacha() {
       const count = selectedGachaCount;
       const cost = count * 100;
@@ -491,51 +502,139 @@
       resultContainer.style.display = 'none';
 
       currentGachaResults = [];
-      pendingGachaRank = 'blue';
+      highestRank = 'D';
 
       for(let i=0; i<count; i++) {
         let item = stock.pop();
         currentGachaResults.push(item);
 
-        if (item.rank === 'A') pendingGachaRank = 'rainbow';
-        else if (item.rank === 'B' && pendingGachaRank !== 'rainbow') pendingGachaRank = 'gold';
-        else if (item.rank === 'C' && !['rainbow', 'gold'].includes(pendingGachaRank)) pendingGachaRank = 'silver';
+        if (item.rank === 'S') highestRank = 'S';
+        else if (item.rank === 'A' && highestRank !== 'S') highestRank = 'A';
+        else if (item.rank === 'B' && !['S', 'A'].includes(highestRank)) highestRank = 'B';
       }
 
       pushBtn.style.display = 'block';
       cutin.innerText = 'ボタンを叩け！！';
-      cutin.style.color = '#ffffff';
+      drawCardCanvas('D', 'NORMAL'); // 初期状態
       updateUI();
+    }
+
+    // Canvas描画（直感的なグラフィック演出）
+    function drawCardCanvas(rank, mode = 'NORMAL') {
+      const canvas = document.getElementById('animCanvas');
+      const ctx = canvas.getContext('2d');
+      const w = canvas.width;
+      const h = canvas.height;
+
+      ctx.clearRect(0, 0, w, h);
+
+      // 暗転・ブラックアウト（アド確定フリーズ時）
+      if (mode === 'BLACKOUT') {
+        ctx.fillStyle = '#000000';
+        ctx.fillRect(0, 0, w, h);
+        return;
+      }
+
+      // 背景オーラ
+      let bgGrd = ctx.createRadialGradient(w/2, h/2, 20, w/2, h/2, 200);
+      if (rank === 'S') { bgGrd.addColorStop(0, '#f43f5e'); bgGrd.addColorStop(1, '#0b0f19'); }
+      else if (rank === 'A') { bgGrd.addColorStop(0, '#fbbf24'); bgGrd.addColorStop(1, '#0b0f19'); }
+      else if (rank === 'B') { bgGrd.addColorStop(0, '#38bdf8'); bgGrd.addColorStop(1, '#0b0f19'); }
+      else { bgGrd.addColorStop(0, '#1e3a8a'); bgGrd.addColorStop(1, '#0b0f19'); }
+
+      ctx.fillStyle = bgGrd;
+      ctx.fillRect(0, 0, w, h);
+
+      // カード本体
+      ctx.save();
+      ctx.translate(w/2, h/2);
+
+      let cardGrd = ctx.createLinearGradient(-80, -120, 80, 120);
+      if (rank === 'S') { cardGrd.addColorStop(0, '#f43f5e'); cardGrd.addColorStop(1, '#fbbf24'); }
+      else if (rank === 'A') { cardGrd.addColorStop(0, '#f59e0b'); cardGrd.addColorStop(1, '#ef4444'); }
+      else if (rank === 'B') { cardGrd.addColorStop(0, '#38bdf8'); cardGrd.addColorStop(1, '#818cf8'); }
+      else { cardGrd.addColorStop(0, '#3b82f6'); cardGrd.addColorStop(1, '#1e293b'); }
+
+      ctx.fillStyle = cardGrd;
+      ctx.strokeStyle = ['S', 'A'].includes(rank) ? '#ffffff' : '#64748b';
+      ctx.lineWidth = 4;
+
+      ctx.beginPath();
+      ctx.roundRect(-80, -120, 160, 240, 12);
+      ctx.fill();
+      ctx.stroke();
+
+      // カード内文字
+      ctx.fillStyle = '#ffffff';
+      ctx.font = '900 24px sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText(rank + '賞', 0, -10);
+
+      if (mode === 'AD_CONFIRM') {
+        ctx.fillStyle = '#fef08a';
+        ctx.font = '900 18px sans-serif';
+        ctx.fillText('🌈 爆アド確定！！ 🌈', 0, 40);
+      } else if (mode === 'REVERSE') {
+        ctx.fillStyle = '#fef08a';
+        ctx.font = '900 18px sans-serif';
+        ctx.fillText('⚡ 逆転昇格！！ ⚡', 0, 40);
+      }
+
+      ctx.restore();
     }
 
     function triggerPachinkoEffect() {
       const pushBtn = document.getElementById('pushBtn');
-      const modal = document.getElementById('gachaModal');
       const cutin = document.getElementById('cutinText');
 
       pushBtn.style.display = 'none';
 
-      if (pendingGachaRank === 'rainbow') {
-        modal.classList.add('flash-rainbow');
-        cutin.innerText = '🌈【虹】超極上アド確定！！ 🌈';
-      } else if (pendingGachaRank === 'gold') {
-        modal.classList.add('flash-gold');
-        cutin.innerText = '🥇【金】激熱！豪華カード獲得！ 🥇';
-      } else if (pendingGachaRank === 'silver') {
-        modal.classList.add('flash-silver');
-        cutin.innerText = '🥈【銀】優良カードHIT！';
-      } else {
-        modal.classList.add('flash-blue');
-        cutin.innerText = '🔵【青】開封完了';
-      }
+      // 1. 【アド確定ルート（S賞・A賞）】
+      if (['S', 'A'].includes(highestRank)) {
+        // ランダムで「直アド確定フリーズ」か「D賞からの逆転昇格」を選択
+        const isDirect = Math.random() > 0.4;
 
-      setTimeout(() => {
-        document.getElementById('effectStage').style.display = 'none';
-        document.getElementById('resultContainer').style.display = 'block';
-        renderResultList();
-      }, 1000);
+        if (isDirect) {
+          // 直アド確定：暗転フリーズ発動
+          cutin.innerText = '・・・・・・';
+          drawCardCanvas('D', 'BLACKOUT');
+
+          setTimeout(() => {
+            cutin.innerText = highestRank === 'S' ? '🌈🔥【超絶爆アド確定！！】🔥🌈' : '🥇🔥【アド確定！！】🔥🥇';
+            drawCardCanvas(highestRank, 'AD_CONFIRM');
+          }, 600);
+
+        } else {
+          // 逆転昇格：一旦D賞（青）を見せてからクラッシュ昇格
+          cutin.innerText = '青パック…？';
+          drawCardCanvas('D', 'NORMAL');
+
+          setTimeout(() => {
+            cutin.innerText = highestRank === 'S' ? '⚡ 画面クラッシュ！S賞へ逆転昇格！！ ⚡' : '⚡ 昇格！A賞へ逆転到達！！ ⚡';
+            drawCardCanvas(highestRank, 'REVERSE');
+          }, 800);
+        }
+
+        setTimeout(() => {
+          document.getElementById('effectStage').style.display = 'none';
+          document.getElementById('resultContainer').style.display = 'block';
+          renderResultList();
+        }, 2200);
+
+      } else {
+        // 2. 通常ルート（B賞・D賞）
+        cutin.innerText = highestRank === 'B' ? '🥈【B賞】優良カードHIT！' : '🔵【D賞】開封完了';
+        drawCardCanvas(highestRank, 'NORMAL');
+
+        setTimeout(() => {
+          document.getElementById('effectStage').style.display = 'none';
+          document.getElementById('resultContainer').style.display = 'block';
+          renderResultList();
+        }, 1000);
+      }
     }
 
+    // 獲得結果描画＆金額計算
     function renderResultList() {
       const list = document.getElementById('resultList');
       list.innerHTML = '';
@@ -545,7 +644,7 @@
         div.className = `result-item item-${res.rank}`;
         div.innerHTML = `
           <div>
-            <input type="checkbox" class="res-chk" data-idx="${idx}">
+            <input type="checkbox" class="res-chk" data-idx="${idx}" data-pt="${res.convertPt}" onchange="updateResBatchSum()">
             <span class="badge badge-${res.rank}">${res.rank}賞</span>
             <span>${res.label}</span>
           </div>
@@ -553,6 +652,15 @@
         `;
         list.appendChild(div);
       });
+      updateResBatchSum();
+    }
+
+    function updateResBatchSum() {
+      let sum = 0;
+      document.querySelectorAll('.res-chk:checked').forEach(chk => {
+        sum += parseInt(chk.dataset.pt);
+      });
+      document.getElementById('resBatchSum').innerText = sum.toLocaleString();
     }
 
     function convertSingleRes(idx) {
@@ -564,6 +672,7 @@
 
     function toggleSelectAllRes(master) {
       document.querySelectorAll('.res-chk').forEach(chk => chk.checked = master.checked);
+      updateResBatchSum();
     }
 
     function convertSelectedRes() {
@@ -587,7 +696,7 @@
       updateUI();
     }
 
-    /* --- 商品一覧（コレクション）モーダル制御 --- */
+    /* --- 獲得商品一覧モーダル --- */
     function openInventoryModal() {
       document.getElementById('inventoryModal').classList.add('active');
       renderInventory();
@@ -603,6 +712,7 @@
 
       if (userInventory.length === 0) {
         list.innerHTML = '<div style="color:#64748b; font-size:0.85rem; padding:1.5rem; text-align:center;">未還元の獲得カードはありません</div>';
+        updateInvBatchSum();
         return;
       }
 
@@ -611,7 +721,7 @@
         div.className = `inventory-item item-${res.rank}`;
         div.innerHTML = `
           <div>
-            <input type="checkbox" class="inv-chk" data-idx="${idx}">
+            <input type="checkbox" class="inv-chk" data-idx="${idx}" data-pt="${res.convertPt}" onchange="updateInvBatchSum()">
             <span class="badge badge-${res.rank}">${res.rank}賞</span>
             <span>${res.label}</span>
           </div>
@@ -619,6 +729,15 @@
         `;
         list.appendChild(div);
       });
+      updateInvBatchSum();
+    }
+
+    function updateInvBatchSum() {
+      let sum = 0;
+      document.querySelectorAll('.inv-chk:checked').forEach(chk => {
+        sum += parseInt(chk.dataset.pt);
+      });
+      document.getElementById('invBatchSum').innerText = sum.toLocaleString();
     }
 
     function convertSingleInv(idx) {
@@ -630,6 +749,7 @@
 
     function toggleSelectAllInv(master) {
       document.querySelectorAll('.inv-chk').forEach(chk => chk.checked = master.checked);
+      updateInvBatchSum();
     }
 
     function convertSelectedInv() {
