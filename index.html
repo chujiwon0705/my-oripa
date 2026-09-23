@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>縦スクロール型 3D演出Webオリパ</title>
+  <title>2種ガチャ＆タブ切替 3D Webオリパ</title>
   <style>
     :root {
       --bg-color: #060913;
@@ -28,7 +28,7 @@
       flex-direction: column;
       align-items: center;
       min-height: 100vh;
-      padding-bottom: 5rem;
+      padding-bottom: 4rem;
     }
 
     header {
@@ -66,10 +66,7 @@
       border: 1px solid rgba(255,255,255,0.1);
     }
 
-    .status-value {
-      font-weight: bold;
-      color: var(--gold);
-    }
+    .status-value { font-weight: bold; color: var(--gold); }
 
     .reset-btn {
       background: #dc2626;
@@ -90,7 +87,7 @@
       box-sizing: border-box;
       display: flex;
       flex-direction: column;
-      gap: 1.5rem;
+      gap: 1.25rem;
     }
 
     .section-card {
@@ -103,15 +100,36 @@
       box-sizing: border-box;
     }
 
-    .section-title {
-      font-size: 1.1rem;
-      font-weight: bold;
-      margin-bottom: 0.75rem;
-      color: var(--accent-color);
+    /* タブ切り替えボタン */
+    .tab-nav {
       display: flex;
-      justify-content: space-between;
-      align-items: center;
+      gap: 0.5rem;
+      margin-bottom: 1rem;
+      border-bottom: 2px solid rgba(255,255,255,0.1);
+      padding-bottom: 0.5rem;
     }
+
+    .tab-btn {
+      flex: 1;
+      padding: 0.6rem 0.3rem;
+      background: rgba(0,0,0,0.4);
+      border: 1px solid rgba(255,255,255,0.15);
+      color: #94a3b8;
+      font-weight: bold;
+      font-size: 0.85rem;
+      border-radius: 0.5rem;
+      cursor: pointer;
+      text-align: center;
+    }
+
+    .tab-btn.active {
+      background: var(--accent-color);
+      color: #000;
+      border-color: var(--accent-color);
+    }
+
+    .tab-content { display: none; }
+    .tab-content.active { display: block; }
 
     .count-select {
       display: flex;
@@ -123,12 +141,12 @@
 
     .count-opt {
       flex: 1;
-      min-width: 60px;
-      padding: 0.5rem 0.25rem;
+      min-width: 55px;
+      padding: 0.5rem 0.2rem;
       background: rgba(0,0,0,0.4);
       border: 1px solid rgba(255,255,255,0.2);
       border-radius: 0.5rem;
-      font-size: 0.8rem;
+      font-size: 0.75rem;
       font-weight: bold;
       cursor: pointer;
       text-align: center;
@@ -138,7 +156,6 @@
       border-color: var(--gold);
       background: rgba(251, 191, 36, 0.25);
       color: var(--gold);
-      box-shadow: 0 0 10px rgba(251, 191, 36, 0.3);
     }
 
     button.gacha-exec-btn {
@@ -147,16 +164,16 @@
       border: none;
       border-radius: 0.5rem;
       font-weight: 900;
-      font-size: 1.2rem;
+      font-size: 1.15rem;
       background: linear-gradient(135deg, #f59e0b, #ef4444);
       color: white;
       cursor: pointer;
       box-shadow: 0 0 20px rgba(239, 68, 68, 0.5);
     }
 
-    /* 3D 演出エリア */
+    /* 3D 演出ステージ */
     .stage-box {
-      height: 380px;
+      height: 320px;
       position: relative;
       display: flex;
       flex-direction: column;
@@ -170,16 +187,14 @@
     }
 
     .card-3d-wrapper {
-      width: 200px;
-      height: 290px;
+      width: 180px;
+      height: 260px;
       position: relative;
       transform-style: preserve-3d;
       transition: transform 1.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
     }
 
-    .card-3d-wrapper.flipped {
-      transform: rotateY(180deg) scale(1.05);
-    }
+    .card-3d-wrapper.flipped { transform: rotateY(180deg) scale(1.05); }
 
     .card-face {
       position: absolute;
@@ -200,15 +215,11 @@
       background: linear-gradient(135deg, #ef4444, #991b1b, #450a0a);
       color: #fef08a;
       font-weight: 900;
-      font-size: 1.5rem;
+      font-size: 1.3rem;
       border-color: #fbbf24;
     }
 
-    .card-front {
-      transform: rotateY(180deg);
-      color: white;
-      font-weight: 900;
-    }
+    .card-front { transform: rotateY(180deg); color: white; font-weight: 900; }
 
     .rank-S { background: linear-gradient(135deg, #f43f5e, #fbbf24, #ef4444); border-color: #fef08a; box-shadow: 0 0 40px #f43f5e; }
     .rank-A { background: linear-gradient(135deg, #f59e0b, #ef4444); border-color: #fbbf24; box-shadow: 0 0 30px #f59e0b; }
@@ -218,16 +229,16 @@
 
     .push-btn {
       position: absolute;
-      bottom: 8%;
-      width: 110px;
-      height: 110px;
+      bottom: 6%;
+      width: 100px;
+      height: 100px;
       border-radius: 50%;
       background: radial-gradient(circle, #ef4444, #7f1d1d);
       color: white;
-      font-size: 1.2rem;
+      font-size: 1.1rem;
       font-weight: 900;
-      border: 5px solid #fca5a5;
-      box-shadow: 0 0 30px #ef4444;
+      border: 4px solid #fca5a5;
+      box-shadow: 0 0 25px #ef4444;
       cursor: pointer;
       animation: pulseBtn 0.45s infinite alternate;
       z-index: 20;
@@ -239,14 +250,13 @@
     }
 
     .cutin-text {
-      font-size: 1.5rem;
+      font-size: 1.4rem;
       font-weight: 900;
       text-align: center;
       margin-top: 0.75rem;
       text-shadow: 0 0 15px rgba(255,255,255,0.9);
     }
 
-    /* 一覧・リスト用 */
     .sort-btn {
       background: #0369a1;
       color: white;
@@ -285,7 +295,7 @@
       flex-direction: column;
       gap: 0.5rem;
       margin-top: 0.75rem;
-      max-height: 350px;
+      max-height: 300px;
       overflow-y: auto;
     }
 
@@ -330,7 +340,6 @@
       cursor: pointer;
     }
 
-    /* 還元確認ダイアログ */
     .confirm-overlay {
       display: none;
       position: fixed;
@@ -353,19 +362,8 @@
       width: 90%;
     }
 
-    .confirm-pt {
-      font-size: 1.5rem;
-      font-weight: 900;
-      color: var(--green);
-      margin: 0.5rem 0;
-    }
-
-    .confirm-btn-group {
-      display: flex;
-      gap: 0.5rem;
-      margin-top: 1rem;
-    }
-
+    .confirm-pt { font-size: 1.5rem; font-weight: 900; color: var(--green); margin: 0.5rem 0; }
+    .confirm-btn-group { display: flex; gap: 0.5rem; margin-top: 1rem; }
     .confirm-yes { flex: 1; background: var(--green); color: white; border: none; padding: 0.6rem; border-radius: 0.25rem; font-weight: bold; cursor: pointer; }
     .confirm-no { flex: 1; background: #64748b; color: white; border: none; padding: 0.6rem; border-radius: 0.25rem; font-weight: bold; cursor: pointer; }
   </style>
@@ -373,43 +371,57 @@
 <body>
 
   <header>
-    <h1>マイルドWebオリパ</h1>
+    <h1>Webオリパ シミュレーター</h1>
     <div class="status-bar">
       <div class="status-item">所持pt: <span id="pointCount" class="status-value">100,000</span> pt</div>
-      <div class="status-item">残数: <span id="stockCount" class="status-value">750</span>/750</div>
+      <div class="status-item">現在ガチャ残: <span id="stockCount" class="status-value">750</span>/750</div>
     </div>
     <button class="reset-btn" onclick="initOripa()">最初からリセット</button>
   </header>
 
   <main>
-    <!-- ガチャ実行カード -->
+    <!-- ① ガチャ切り替えタブ（同じ枠で2種） -->
     <div class="section-card">
-      <div style="font-weight:bold; font-size:1.1rem; color:#fca5a5; margin-bottom:0.5rem;">【1/15当たり】マイルドオリパ 1口100 pt</div>
-      <div style="font-size:0.85rem; color:#94a3b8; margin-bottom:1rem;">S(12k) / A(4k) / B(2k) / C(500pt) 封入！</div>
+      <div class="tab-nav">
+        <div class="tab-btn active" onclick="switchGachaType('mild', this)">🎰 マイルド (100pt)</div>
+        <div class="tab-btn" onclick="switchGachaType('high', this)">🔥 高額アド (1000pt)</div>
+      </div>
+
+      <!-- マイルドガチャ詳細 -->
+      <div id="gachaMildContent" class="tab-content active">
+        <div style="font-weight:bold; color:#fca5a5; margin-bottom:0.25rem;">【1/15当たり】マイルドオリパ</div>
+        <div style="font-size:0.8rem; color:#94a3b8; margin-bottom:0.75rem;">S(12k) / A(4k) / B(2k) / C(500pt) 封入</div>
+      </div>
+
+      <!-- 高額ガチャ詳細 -->
+      <div id="gachaHighContent" class="tab-content">
+        <div style="font-weight:bold; color:#f59e0b; margin-bottom:0.25rem;">【1/10当たり】高額一撃オリパ</div>
+        <div style="font-size:0.8rem; color:#94a3b8; margin-bottom:0.75rem;">S(10万pt) / A(3万pt) / B(1万pt) 封入</div>
+      </div>
 
       <div class="count-select">
         <div class="count-opt selected" onclick="selectCount(1, this)">1連</div>
         <div class="count-opt" onclick="selectCount(10, this)">10連</div>
         <div class="count-opt" onclick="selectCount(100, this)">100連</div>
-        <div class="count-opt" onclick="selectCount(1000, this)">1,000連</div>
-        <div class="count-opt" id="optAll" onclick="selectCount('all', this)">残り全部</div>
+        <div class="count-opt" onclick="selectCount(1000, this)">1000連</div>
+        <div class="count-opt" onclick="selectCount('all', this)">残り全引き</div>
       </div>
 
       <button id="gachaExecBtn" class="gacha-exec-btn" onclick="playGacha()">1連を引く (100 pt)</button>
     </div>
 
-    <!-- ① 演出ステージ -->
-    <div id="stageArea" class="section-card">
-      <div class="section-title">🎬 開封演出</div>
+    <!-- ② 演出ステージ -->
+    <div class="section-card">
+      <div style="font-weight:bold; color:var(--accent-color); margin-bottom:0.5rem;">🎬 開封演出</div>
       <div class="stage-box">
         <div id="card3dWrapper" class="card-3d-wrapper">
           <div class="card-face card-back">
-            <div style="font-size:1.5rem;">SPECIAL</div>
-            <div style="font-size:1.8rem; color:#fff;">ORIPA</div>
+            <div style="font-size:1.3rem;">SPECIAL</div>
+            <div style="font-size:1.6rem; color:#fff;">ORIPA</div>
           </div>
           <div id="cardFrontFace" class="card-face card-front rank-D">
-            <div id="cardFrontRank" style="font-size:2.5rem;">D賞</div>
-            <div id="cardFrontLabel" style="font-size:0.85rem; margin-top:0.5rem; text-align:center;">ノーマルカード</div>
+            <div id="cardFrontRank" style="font-size:2.2rem;">D賞</div>
+            <div id="cardFrontLabel" style="font-size:0.8rem; margin-top:0.5rem; text-align:center;">ノーマルカード</div>
           </div>
         </div>
         <button id="pushBtn" class="push-btn" style="display:none;" onclick="triggerEffect()">PUSH!</button>
@@ -417,39 +429,43 @@
       <div id="cutinText" class="cutin-text">ガチャを引いてね！</div>
     </div>
 
-    <!-- ② 今回の獲得結果 -->
+    <!-- ③ カード閲覧切り替えタブ（今回結果 ↔ 保有カード） -->
     <div class="section-card">
-      <div class="section-title">
-        <span>🎉 今回の獲得結果</span>
-        <button class="sort-btn" onclick="toggleResSort()">並び替え: <span id="resSortLabel">引いた順</span></button>
-      </div>
-      
-      <div class="batch-header">
-        <label><input type="checkbox" id="selectAllRes" onchange="toggleSelectAllRes(this)"> 全選択</label>
-        <div>選択中: <b id="resBatchSum" style="color:var(--gold);">0</b> pt</div>
-        <button class="batch-btn" onclick="requestConvertSelectedRes()">一括還元</button>
+      <div class="tab-nav">
+        <div class="tab-btn active" onclick="switchViewTab('result', this)">🎉 今回の獲得結果</div>
+        <div class="tab-btn" onclick="switchViewTab('inventory', this)">📦 保有一覧 (<span id="invCount">0</span>)</div>
       </div>
 
-      <div id="resultList" class="card-list">
-        <div style="color:#64748b; text-align:center; padding:1rem; font-size:0.85rem;">ここに引いた結果が表示されます</div>
-      </div>
-    </div>
-
-    <!-- ③ 保有カード一覧 -->
-    <div class="section-card">
-      <div class="section-title">
-        <span>📦 保有カード一覧 (<span id="invCount">0</span>)</span>
-        <button class="sort-btn" onclick="toggleInvSort()">並び替え: <span id="invSortLabel">引いた順</span></button>
-      </div>
-
-      <div class="batch-header">
-        <label><input type="checkbox" id="selectAllInv" onchange="toggleSelectAllInv(this)"> 全選択</label>
-        <div>選択中: <b id="invBatchSum" style="color:var(--gold);">0</b> pt</div>
-        <button class="batch-btn" onclick="requestConvertSelectedInv()">一括還元</button>
+      <!-- 今回の獲得結果ビュー -->
+      <div id="viewResultContent" class="tab-content active">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.5rem;">
+          <span style="font-weight:bold; font-size:0.85rem;">獲得リスト</span>
+          <button class="sort-btn" onclick="toggleResSort()">並び替え: <span id="resSortLabel">引いた順</span></button>
+        </div>
+        <div class="batch-header">
+          <label><input type="checkbox" id="selectAllRes" onchange="toggleSelectAllRes(this)"> 全選択</label>
+          <div>選択額: <b id="resBatchSum" style="color:var(--gold);">0</b> pt</div>
+          <button class="batch-btn" onclick="requestConvertSelectedRes()">一括還元</button>
+        </div>
+        <div id="resultList" class="card-list">
+          <div style="color:#64748b; text-align:center; padding:1rem; font-size:0.85rem;">ここに引いた結果が表示されます</div>
+        </div>
       </div>
 
-      <div id="inventoryList" class="card-list">
-        <div style="color:#64748b; text-align:center; padding:1rem; font-size:0.85rem;">獲得した未還元カードはありません</div>
+      <!-- 保有カード一覧ビュー -->
+      <div id="viewInventoryContent" class="tab-content">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.5rem;">
+          <span style="font-weight:bold; font-size:0.85rem;">保有リスト</span>
+          <button class="sort-btn" onclick="toggleInvSort()">並び替え: <span id="invSortLabel">引いた順</span></button>
+        </div>
+        <div class="batch-header">
+          <label><input type="checkbox" id="selectAllInv" onchange="toggleSelectAllInv(this)"> 全選択</label>
+          <div>選択額: <b id="invBatchSum" style="color:var(--gold);">0</b> pt</div>
+          <button class="batch-btn" onclick="requestConvertSelectedInv()">一括還元</button>
+        </div>
+        <div id="inventoryList" class="card-list">
+          <div style="color:#64748b; text-align:center; padding:1rem; font-size:0.85rem;">獲得した未還元カードはありません</div>
+        </div>
       </div>
     </div>
   </main>
@@ -468,11 +484,12 @@
   </div>
 
   <script>
-    let stock = [];
+    let activeGachaType = 'mild'; // 'mild' or 'high'
+    let stockMild = [], stockHigh = [];
     let currentPoints = 100000;
     let selectedGachaCount = 1;
     let isSelectAllMode = false;
-    
+
     let userInventory = [];
     let currentGachaResults = [];
     let highestRankItem = null;
@@ -487,72 +504,109 @@
       currentPoints = 100000;
       userInventory = [];
       currentGachaResults = [];
-      
-      const TOTAL_SLOTS = 750;
-      let slots = new Array(TOTAL_SLOTS).fill(null);
 
-      let hits = [];
-      for(let i=0; i<2; i++) hits.push({ rank: 'S', label: '目玉カード (12,000 pt相当)', convertPt: 12000 });
-      for(let i=0; i<3; i++) hits.push({ rank: 'A', label: '豪華カード (4,000 pt相当)', convertPt: 4000 });
-      for(let i=0; i<5; i++) hits.push({ rank: 'B', label: '人気SR・パラレル (2,000 pt相当)', convertPt: 2000 });
-      for(let i=0; i<40; i++) hits.push({ rank: 'C', label: '優良カード (500 pt相当)', convertPt: 500 });
-      
-      hits.sort(() => Math.random() - 0.5);
+      // マイルドオリパ (100pt / 750口)
+      stockMild = buildStock(750, [
+        { rank: 'S', label: '目玉カード (12,000 pt相当)', convertPt: 12000, count: 2 },
+        { rank: 'A', label: '豪華カード (4,000 pt相当)', convertPt: 4000, count: 3 },
+        { rank: 'B', label: '人気SR (2,000 pt相当)', convertPt: 2000, count: 5 },
+        { rank: 'C', label: '優良カード (500 pt相当)', convertPt: 500, count: 40 },
+      ], { rank: 'D', label: 'ノーマルカード', convertPt: 1 });
 
-      let step = TOTAL_SLOTS / hits.length;
-      hits.forEach((hitItem, idx) => {
-        let basePos = Math.floor(idx * step);
-        let jitter = Math.floor(Math.random() * 9) - 4;
-        let pos = Math.max(0, Math.min(TOTAL_SLOTS - 1, basePos + jitter));
-        while (slots[pos] !== null) pos = (pos + 1) % TOTAL_SLOTS;
-        slots[pos] = hitItem;
-      });
+      // 高額オリパ (1,000pt / 100口)
+      stockHigh = buildStock(100, [
+        { rank: 'S', label: '超目玉PSA10 (100,000 pt相当)', convertPt: 100000, count: 1 },
+        { rank: 'A', label: '高級SR (30,000 pt相当)', convertPt: 30000, count: 2 },
+        { rank: 'B', label: '中当たり (10,000 pt相当)', convertPt: 10000, count: 7 },
+      ], { rank: 'D', label: 'ハズレカード', convertPt: 100 });
 
-      for (let i = 0; i < TOTAL_SLOTS; i++) {
-        if (slots[i] === null) slots[i] = { rank: 'D', label: 'ノーマルカード', convertPt: 1 };
-        slots[i].id = Math.random();
-      }
-
-      stock = slots;
-      const firstOpt = document.querySelector('.count-opt');
-      if (firstOpt) selectCount(1, firstOpt);
       updateUI();
       renderInventory();
       renderResultList();
+    }
+
+    function buildStock(total, hitsSpec, filler) {
+      let slots = new Array(total).fill(null);
+      let hits = [];
+      hitsSpec.forEach(h => {
+        for(let i=0; i<h.count; i++) hits.push({ rank: h.rank, label: h.label, convertPt: h.convertPt });
+      });
+      hits.sort(() => Math.random() - 0.5);
+
+      let step = total / hits.length;
+      hits.forEach((hitItem, idx) => {
+        let basePos = Math.floor(idx * step);
+        let pos = Math.max(0, Math.min(total - 1, basePos + Math.floor(Math.random()*5)-2));
+        while (slots[pos] !== null) pos = (pos + 1) % total;
+        slots[pos] = hitItem;
+      });
+
+      for (let i = 0; i < total; i++) {
+        if (slots[i] === null) slots[i] = { ...filler };
+        slots[i].id = Math.random();
+      }
+      return slots;
+    }
+
+    function getCurrentStock() {
+      return activeGachaType === 'mild' ? stockMild : stockHigh;
+    }
+
+    function switchGachaType(type, btnEl) {
+      activeGachaType = type;
+      btnEl.parentElement.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+      btnEl.classList.add('active');
+
+      document.getElementById('gachaMildContent').classList.toggle('active', type === 'mild');
+      document.getElementById('gachaHighContent').classList.toggle('active', type === 'high');
+
+      updateUI();
+    }
+
+    function switchViewTab(view, btnEl) {
+      btnEl.parentElement.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+      btnEl.classList.add('active');
+
+      document.getElementById('viewResultContent').classList.toggle('active', view === 'result');
+      document.getElementById('viewInventoryContent').classList.toggle('active', view === 'inventory');
     }
 
     function selectCount(count, el) {
       document.querySelectorAll('.count-opt').forEach(opt => opt.classList.remove('selected'));
       el.classList.add('selected');
       isSelectAllMode = (count === 'all');
-      selectedGachaCount = isSelectAllMode ? stock.length : count;
+      selectedGachaCount = count;
       updateGachaBtnLabel();
     }
 
     function updateGachaBtnLabel() {
+      const stock = getCurrentStock();
       const btn = document.getElementById('gachaExecBtn');
       if (stock.length === 0) {
-        btn.innerText = '完売しました';
+        btn.innerText = 'このガチャは完売しました';
         btn.disabled = true;
         return;
       }
       btn.disabled = false;
+      const unitPrice = activeGachaType === 'mild' ? 100 : 1000;
       let actualCount = isSelectAllMode ? stock.length : selectedGachaCount;
-      const cost = actualCount * 100;
+      const cost = actualCount * unitPrice;
       btn.innerText = `${actualCount.toLocaleString()}連を引く (${cost.toLocaleString()} pt)`;
     }
 
     function updateUI() {
+      const stock = getCurrentStock();
       document.getElementById('pointCount').innerText = currentPoints.toLocaleString();
       document.getElementById('stockCount').innerText = stock.length;
       document.getElementById('invCount').innerText = userInventory.length;
-      if (isSelectAllMode) selectedGachaCount = stock.length;
       updateGachaBtnLabel();
     }
 
     function playGacha() {
+      const stock = getCurrentStock();
+      const unitPrice = activeGachaType === 'mild' ? 100 : 1000;
       const count = isSelectAllMode ? stock.length : selectedGachaCount;
-      const cost = count * 100;
+      const cost = count * unitPrice;
 
       if (count === 0 || currentPoints < cost || stock.length < count) {
         alert('ポイントまたは残口数が足りません！');
@@ -560,8 +614,6 @@
       }
 
       currentPoints -= cost;
-
-      // 獲得した結果を過去の保有カードへ移動
       userInventory = userInventory.concat(currentGachaResults);
       currentGachaResults = [];
       highestRankItem = { rank: 'D' };
@@ -574,11 +626,9 @@
         }
       }
 
-      // 演出初期化＆演出エリアへスムーズスクロール
       document.getElementById('card3dWrapper').classList.remove('flipped');
       document.getElementById('pushBtn').style.display = 'block';
       document.getElementById('cutinText').innerText = 'PUSHボタンを押せ！！';
-      document.getElementById('stageArea').scrollIntoView({ behavior: 'smooth' });
 
       updateUI();
       renderInventory();
@@ -605,12 +655,12 @@
           wrapper.classList.add('flipped');
           cutin.innerText = highestRankItem.rank === 'S' ? '🌈🔥【超絶爆アド確定！！】🔥🌈' : '🥇🔥【アド確定！！】🔥🥇';
           renderResultList();
-        }, 1500);
+        }, 1200);
       } else {
         cutin.innerText = 'カードオープン...';
         setTimeout(() => {
           wrapper.classList.add('flipped');
-          if (highestRankItem.rank === 'B') cutin.innerText = '💜【B賞】人気SRカードHIT！';
+          if (highestRankItem.rank === 'B') cutin.innerText = '💜【B賞】人気カードHIT！';
           else if (highestRankItem.rank === 'C') cutin.innerText = '🥈【C賞】優良カードHIT！';
           else cutin.innerText = '🔵【D賞】開封完了';
           renderResultList();
@@ -618,7 +668,6 @@
       }
     }
 
-    // 結果ソート
     function toggleResSort() {
       resSortMode = resSortMode === 'PULL' ? 'RANK' : 'PULL';
       document.getElementById('resSortLabel').innerText = resSortMode === 'PULL' ? '引いた順' : '当たり順';
@@ -663,7 +712,6 @@
       document.getElementById('resBatchSum').innerText = sum.toLocaleString();
     }
 
-    // 保有カードソート
     function toggleInvSort() {
       invSortMode = invSortMode === 'PULL' ? 'RANK' : 'PULL';
       document.getElementById('invSortLabel').innerText = invSortMode === 'PULL' ? '引いた順' : '当たり順';
@@ -708,7 +756,6 @@
       document.getElementById('invBatchSum').innerText = sum.toLocaleString();
     }
 
-    /* 還元モーダル処理 */
     function openConfirmModal(ptValue, actionFn) {
       document.getElementById('confirmPtDisplay').innerText = `+${ptValue.toLocaleString()} pt`;
       pendingConvertAction = actionFn;
