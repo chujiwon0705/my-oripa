@@ -229,7 +229,7 @@
       text-shadow: 0 0 20px rgba(255,255,255,0.8);
     }
 
-    /* 演出カラーフラッシュ（揺れなし） */
+    /* 演出カラーフラッシュ */
     .flash-rainbow { animation: rainbowFlash 0.3s infinite alternate; }
     .flash-gold { animation: goldFlash 0.4s infinite alternate; }
     .flash-silver { animation: silverFlash 0.5s infinite alternate; }
@@ -407,24 +407,51 @@
     let stock = [];
     let currentPoints = 100000;
     let selectedGachaCount = 1;
-    let userInventory = []; // 未還元カード保持
-    let currentGachaResults = []; // 今回のガチャ結果
+    let userInventory = [];
+    let currentGachaResults = [];
 
     function initOripa() {
       currentPoints = 100000;
-      stock = [];
       userInventory = [];
+      
+      const TOTAL_SLOTS = 750;
+      let slots = new Array(TOTAL_SLOTS).fill(null);
 
-      // A賞: 2口 (12,000 pt)
-      for(let i=0; i<2; i++) stock.push({ id: Math.random(), rank: 'A', label: '目玉カード (12,000 pt相当)', convertPt: 12000 });
-      // B賞: 3口 (2,000 pt)
-      for(let i=0; i<3; i++) stock.push({ id: Math.random(), rank: 'B', label: '豪華SR・パラレル (2,000 pt相当)', convertPt: 2000 });
-      // C賞: 45口 (500 pt)
-      for(let i=0; i<45; i++) stock.push({ id: Math.random(), rank: 'C', label: '優良カード (500 pt相当)', convertPt: 500 });
-      // D賞(ハズレ): 700口 (1 pt)
-      for(let i=0; i<700; i++) stock.push({ id: Math.random(), rank: 'D', label: 'ノーマルカード', convertPt: 1 });
+      // 当たりアイテムリスト作成（全50口）
+      let hits = [];
+      for(let i=0; i<2; i++) hits.push({ rank: 'A', label: '目玉カード (12,000 pt相当)', convertPt: 12000 });
+      for(let i=0; i<3; i++) hits.push({ rank: 'B', label: '豪華SR・パラレル (2,000 pt相当)', convertPt: 2000 });
+      for(let i=0; i<45; i++) hits.push({ rank: 'C', label: '優良カード (500 pt相当)', convertPt: 500 });
+      
+      // 当たりを完全ランダムにシャッフル
+      hits.sort(() => Math.random() - 0.5);
 
-      stock.sort(() => Math.random() - 0.5);
+      // 当たりが固まらないよう、750口の範囲内に均等分散配置
+      let hitCount = hits.length;
+      let step = TOTAL_SLOTS / hitCount; // 約15口ごとに1つ
+
+      hits.forEach((hitItem, idx) => {
+        // 基本位置（例: 15, 30, 45...）＋ ±4口のランダムジッター（分散保持）
+        let basePos = Math.floor(idx * step);
+        let jitter = Math.floor(Math.random() * 9) - 4;
+        let pos = Math.max(0, Math.min(TOTAL_SLOTS - 1, basePos + jitter));
+
+        // すでに埋まっていた場合は一番近い空きスロットを探す
+        while (slots[pos] !== null) {
+          pos = (pos + 1) % TOTAL_SLOTS;
+        }
+        slots[pos] = hitItem;
+      });
+
+      // 空いている場所をすべて D賞（ハズレ）で埋める
+      for (let i = 0; i < TOTAL_SLOTS; i++) {
+        if (slots[i] === null) {
+          slots[i] = { rank: 'D', label: 'ノーマルカード', convertPt: 1 };
+        }
+        slots[i].id = Math.random();
+      }
+
+      stock = slots;
       updateUI();
     }
 
